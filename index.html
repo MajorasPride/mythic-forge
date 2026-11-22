@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mythic Forge</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #1c1c1e; color: #e8e8e8; font-family: system-ui, sans-serif; overflow: hidden; }
+  #view { position: absolute; inset: 0; }
+  #top { position: absolute; top: 0; left: 0; right: 0; padding: 10px 14px; font-size: 15px; display: flex; justify-content: space-between; pointer-events: none; }
+  #top small { opacity: .6; }
+  #bar { position: absolute; left: 0; right: 0; bottom: 0; padding: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; background: #1c1c1ecc; }
+  button { font: inherit; font-size: 16px; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #4a4a4e; background: #2c2c30; color: #eee; }
+  button.on { background: #e8e8e8; color: #1c1c1e; border-color: #e8e8e8; }
+</style>
+</head>
+<body>
+<div id="view"></div>
+<div id="top"><span>Mythic Forge</span><small>Phase 1 · Standard mech frame</small></div>
+<div id="bar">
+  <span id="moves" style="display: contents"></span>
+  <button id="bones" class="on">Bones</button>
+</div>
+
+<!-- the mech frame (bones + stand-in blocks + moves), made in Blender -->
+<script src="models/mech_standard.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ---- 1. the stage: renderer, camera, light, floor
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(devicePixelRatio);
+document.getElementById('view').append(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 200);
+camera.position.set(14, 8, 16);
+const controls = new OrbitControls(camera, renderer.domElement);   // drag to turn, pinch to zoom
+controls.target.set(0, 5, 0); controls.update();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 2.2));
+const sun = new THREE.DirectionalLight(0xffffff, 2); sun.position.set(5, 10, 7); scene.add(sun);
+scene.add(new THREE.GridHelper(30, 30, 0x555555, 0x333333));
+function fit() { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
+addEventListener('resize', fit); fit();
+
+// ---- 2. load the mech frame
+const bytes = Uint8Array.from(atob(window.MF_MODELS.mech_standard), c => c.charCodeAt(0)).buffer;
+let mixer, current, skeletonLines;
+const moves = {};
+const PLAY_ONCE = new Set(['punch']);          // moves that play once, the rest loop
+const ORDER = ['idle', 'walk', 'run', 'punch'];
+
+new GLTFLoader().parse(bytes, '', gltf => {
+  const mech = gltf.scene;
+  mech.traverse(m => { if (m.isMesh) m.material = new THREE.MeshStandardMaterial({ color: 0x9a9890, flatShading: true }); });
+  scene.add(mech);
+  skeletonLines = new THREE.SkeletonHelper(mech);        // shows the bones
+  skeletonLines.material.depthTest = false;
+  scene.add(skeletonLines);
+  mixer = new THREE.AnimationMixer(mech);
+  gltf.animations.forEach(clip => moves[clip.name] = mixer.clipAction(clip));
+  ORDER.filter(n => moves[n]).forEach(addMoveButton);
+  play('idle');
+});
+
+// ---- 3. moves
+function play(name) {
+  const next = moves[name];
+  next.reset();
+  next.setLoop(PLAY_ONCE.has(name) ? THREE.LoopOnce : THREE.LoopRepeat);
+  next.clampWhenFinished = true;
+  next.play();
+  if (current && current !== next) current.crossFadeTo(next, 0.25, false);   // smooth switch
+  current = next;
+  document.querySelectorAll('[data-move]').forEach(b => b.classList.toggle('on', b.dataset.move === name));
+}
+function addMoveButton(name) {
+  const b = document.createElement('button');
+  b.textContent = name[0].toUpperCase() + name.slice(1);
+  b.dataset.move = name;
+  b.onclick = () => play(name);
+  document.getElementById('moves').append(b);
+}
+document.getElementById('bones').onclick = e => {
+  skeletonLines.visible = !skeletonLines.visible;
+  e.target.classList.toggle('on', skeletonLines.visible);
+};
+
+// ---- 4. the loop
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => { if (mixer) mixer.update(clock.getDelta()); renderer.render(scene, camera); });
+</script>
+</body>
+</html>
