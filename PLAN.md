@@ -1,8 +1,8 @@
 # Mythic Forge (fresh start) — Plan & Rules
 
 ## Now
-Mythic Forge rebuilt from the ground up (Nov 22, 2026). Phase 1 of 5: Standard mech frame on screen with idle / walk / run / punch.
-Next step: Clayton tries Phase 1, then Phase 2 (real sliders).
+Mythic Forge rebuilt from the ground up (Nov 22, 2026). Phase 2 of 5 built, waiting for Clayton's OK before it's pushed: Body panel with 6 presets + 8 sliders reshaping the frame live, moves keep playing.
+Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
 
 ## What it is (Blueprint)
 - Blender is the factory (makes frames, parts, moves). Mythic Forge is the snap-together table. Titan Clash is the arena.
@@ -13,7 +13,7 @@ Next step: Clayton tries Phase 1, then Phase 2 (real sliders).
 
 ## Phases (one at a time, a finished phase only reopens for bugs)
 0. Brainstorm — done Nov 22.
-1. Smallest version that runs: Standard mech frame + idle, walk, run, punch buttons. Done when: it loads on the S23 Ultra and every button plays its move.
+1. (done Nov 22) Smallest version that runs: Standard mech frame + idle, walk, run, punch buttons. Done when: it loads on the S23 Ultra and every button plays its move.
 2. Real sliders: 6 presets (standard, heavy, sleek, squat, brawler, scout) + 8 sliders (height, leg, arm, shoulder, hip, chest, head, bulk) change the frame live.
 3. Snap armor on: pick a bone, put one part on it (simple blocks first).
 4. First real parts: mech armor pieces built in Blender to fit the frame.
@@ -35,6 +35,7 @@ build-together, pro-3d-workflow, game-art, ponytail, repo-scout. Model: Opus.
 - Keep this file correct; update Now and the Log every session.
 
 ## Log (newest first)
+- Nov 22, 2026: Phase 2 built: frame.js (same math as mech_frame.py) + Body panel. Joints move per slider, stand-in blocks are drawn per bone so they resize; moves made on Standard keep playing on any shape. Tested at phone size: no errors. Not pushed yet.
 - Nov 22, 2026: fresh start. Phase 1 built: index.html loads the Standard mech frame (18 bones) with idle, walk, run, punch.
 
 ## Credits
