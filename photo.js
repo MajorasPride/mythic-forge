@@ -37,7 +37,7 @@
 
   // ---------- pose: any move, frozen on any frame ----------
   function pose() {
-    const name = $('phMove').value, a = C.moves[name]; if (!a) return;
+    const name = $('phMove').value, a = C.moveFor(name); if (!a) return;
     C.mixer.stopAllAction(); a.reset(); a.play(); a.time = +$('phFrame').value * a.getClip().duration;
   }
   function light(kind) {
@@ -79,8 +79,8 @@
       light: [C.lights.hemi.intensity, C.lights.sun.intensity, C.lights.rim.intensity], min: C.controls.minDistance };
     if (C.skeleton()) C.skeleton().visible = false;
     C.controls.maxPolarAngle = Math.PI * .56; C.controls.minDistance = 2;
-    $('phMove').innerHTML = Object.keys(C.moves).map(n => `<option value="${n}">${n[0].toUpperCase() + n.slice(1)}</option>`).join('');
-    $('phMove').value = C.currentMove() || 'idle'; $('phFrame').value = .3; $('phBack').value = 'studio'; $('phLight').value = 'day'; $('phLens').value = C.camera.fov;
+    $('phMove').innerHTML = Object.keys(C.moves).filter(n => !/_L$/.test(n)).map(n => `<option value="${n}">${n[0].toUpperCase() + n.slice(1)}</option>`).join('');
+    $('phMove').value = (C.currentMove() || 'idle').replace(/_L$/, ''); $('phFrame').value = .3; $('phBack').value = 'studio'; $('phLight').value = 'day'; $('phLens').value = C.camera.fov;
     $('phGrid').classList.toggle('on', C.grid.visible); $('phShare').style.display = navigator.canShare ? '' : 'none';
     document.body.classList.add('photo'); pose(); say('');
     requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));

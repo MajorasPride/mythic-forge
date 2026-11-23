@@ -90,6 +90,7 @@
   <div class="line"><span>Spot:</span><select id="bonePick"></select><button id="mirrorBtn" class="on">Mirror</button></div>
   <div class="line" id="weaponRow"><span>Weapons:</span><button data-spot="weapon.R">Right hand</button><button data-spot="weapon.L">Left hand</button><button data-spot="mount.L">Shoulders</button></div>
   <div class="line"><span>Stance:</span><button data-stance="ready" class="on">Ready</button><button data-stance="relaxed">Relaxed</button><button data-stance="action">Action</button></div>
+  <p class="hint" style="margin-top:-4px">The stance is for standing still. Walking carries the weapon low, running and punching hold it ready, and the free hand does the punching.</p>
   <div class="line" id="choices"></div>
 </div>
 <div id="details">
@@ -246,6 +247,14 @@ new GLTFLoader().parse(bytes, '', gltf => {
     clip.tracks.forEach(t => { t.times = t.times.slice(); t.shift(-t0); }); clip.resetDuration();   // copy first: tracks share one time list
     moves[clip.name] = mixer.clipAction(clip);
   });
+  // a left-handed punch (the same move mirrored), used when the right hand is holding a weapon so the free hand does the punching
+  const pc = gltf.animations.find(c => c.name === 'punch');
+  if (pc) { const side = n => /[a-z_](L|R)$/.test(n), flip = n => n.slice(0, -1) + (n.endsWith('L') ? 'R' : 'L');
+    const tracks = pc.tracks.map(t => { const k = t.name.lastIndexOf('.'), node = t.name.slice(0, k), prop = t.name.slice(k), v = Float32Array.from(t.values);
+      if (prop === '.quaternion') for (let i = 0; i < v.length; i += 4) { v[i + 1] = -v[i + 1]; v[i + 2] = -v[i + 2]; }
+      else if (prop === '.position') for (let i = 0; i < v.length; i += 3) v[i] = -v[i];
+      return new t.constructor((side(node) ? flip(node) : node) + prop, Float32Array.from(t.times), v); });
+    moves.punch_L = mixer.clipAction(new THREE.AnimationClip('punch_L', pc.duration, tracks)); }
   shape(F.withPreset('standard'), true);                 // remember the Standard positions
   shape(params);
   ORDER.filter(n => moves[n]).forEach(addMoveButton);
@@ -786,8 +795,10 @@ document.getElementById('detailsBtn').onclick = () => openPanel('details');
 showDetailChoices();
 
 // ---- 3. moves
+// which clip really plays for a move button: Punch uses the free hand (the left one when only the right hand holds a weapon)
+function moveFor(name) { return name === 'punch' && moves.punch_L && held['weapon.R'] && !held['weapon.L'] ? moves.punch_L : moves[name]; }
 function play(name) {
-  const next = moves[name];
+  const next = moveFor(name);
   next.reset();
   next.setLoop(PLAY_ONCE.has(name) ? THREE.LoopOnce : THREE.LoopRepeat);
   next.clampWhenFinished = true;
@@ -854,7 +865,15 @@ const STANCE_OF = { energy_sword: 'blade', katana: 'katana', great_sword: 'heavy
 const _d = new THREE.Vector3(), _t = new THREE.Vector3(), _q = new THREE.Quaternion(), _p = new THREE.Quaternion(), _w = new THREE.Quaternion(), _e = new THREE.Euler();
 const setLocal = (b, deg, side) => { _e.set(R(deg[0]), R(deg[1]) * (side === 'L' ? -1 : 1), R(deg[2]) * (side === 'L' ? -1 : 1), 'XYZ');
   b.quaternion.copy(b.userData.restLocal).multiply(_q.setFromEuler(_e)); b.updateMatrixWorld(true); };
-function stanceOf(side) { const h = held['weapon.' + side]; if (!h) return null; const k = STANCE_OF[h.userData.p.id]; return (stanceMode === 'relaxed' && RELAXED[k]) || (stanceMode === 'action' && ACTION[k]) || STANCE[k]; }
+// STANCE BY MOVE (Nov 23, his rule: "each stance has to be appropriate to its moves"). The stance you pick is for standing (Idle).
+//   Idle  -> the picked stance (Ready / Relaxed / Action)
+//   Walk  -> the weapon's Relaxed carry if it has one (patrol), else Ready
+//   Run   -> Ready (weapon held up and close)
+//   Punch -> Ready (the weapon arm guards, the free hand punches)
+// Action poses move the whole body (lunge, kneel...), so they never play over a move that needs the legs.
+function moveNow() { for (const [n, a] of Object.entries(moves)) if (a.isRunning() && a.getEffectiveWeight() > .5) return n.replace(/_L$/, ''); return 'idle'; }
+function modeNow(k) { const m = moveNow(); return m === 'idle' ? stanceMode : m === 'walk' && RELAXED[k] ? 'relaxed' : 'ready'; }
+function stanceOf(side) { const h = held['weapon.' + side]; if (!h) return null; const k = STANCE_OF[h.userData.p.id], mode = modeNow(k); return (mode === 'relaxed' && RELAXED[k]) || (mode === 'action' && ACTION[k]) || STANCE[k]; }
 // two-bone reach (CCD): turn the upper arm and forearm so the wrist lands on the target point
 function reach(side, target) {
   const chain = [bones['forearm.' + side], bones['upper_arm.' + side]], end = bones['hand.' + side], e = new THREE.Vector3(), j = new THREE.Vector3();
@@ -867,7 +886,7 @@ function reach(side, target) {
 }
 let groundY = null;
 function actionBody() {   // whole-body pose for Stance: Action (the right hand's weapon leads; else the left's)
-  const st = stanceOf('R') || stanceOf('L'); if (stanceMode !== 'action' || !st || !st.body) return;
+  const st = stanceOf('R') || stanceOf('L'); if (stanceMode !== 'action' || moveNow() !== 'idle' || !st || !st.body) return;
   const lead = stanceOf('R') ? 'R' : 'L', flip = s => lead === 'R' ? s : s.replace(/\.(L|R)$/, m => m === '.L' ? '.R' : '.L');
   for (const [n, deg] of Object.entries(st.body)) { const b = bones[flip(n)]; if (b) setLocal(b, deg, lead === 'R' ? (n.endsWith('.L') ? 'L' : 'R') : (n.endsWith('.L') ? 'R' : 'L')); }
   const other = lead === 'R' ? 'L' : 'R';
@@ -924,13 +943,13 @@ function aimWrists() {   // name kept: runs every frame after the move plays
       reach(other, h.localToWorld(new THREE.Vector3(0, len * st.two, 0)));
     }
   }
-  if (wide && stanceMode !== 'action') for (const [s, o] of [['L', 1], ['R', -1]]) {   // heavy weapons: plant the feet a little wider
+  if (wide && stanceMode !== 'action' && moveNow() !== 'walk' && moveNow() !== 'run') for (const [s, o] of [['L', 1], ['R', -1]]) {   // (never while the legs are walking or running)   // heavy weapons: plant the feet a little wider
     const th = bones['thigh.' + s]; th.quaternion.multiply(_q.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -o * R(5 * wide)));
   }
 }
 
 MF_PHOTO.init({ THREE, scene, camera, renderer, outline, controls, moves, get mixer() { return mixer; }, lights: { hemi, sun, rim }, grid, skeleton: () => skeletonLines,
-  play: n => play(n), viewAll: v => viewAll(v), glide, fitDist, mechTop: () => mechTop, currentMove: () => current && current.getClip().name,
+  play: n => play(n), moveFor: n => moveFor(n), viewAll: v => viewAll(v), glide, fitDist, mechTop: () => mechTop, currentMove: () => current && current.getClip().name,
   setStance: m => { const b = document.querySelector(`[data-stance="${m}"]`); if (b) b.click(); }, closePanels: () => openPanel('') });
 document.getElementById('photoBtn').onclick = () => MF_PHOTO.enter();
 

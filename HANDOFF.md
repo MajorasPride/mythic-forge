@@ -14,6 +14,9 @@ Standard mech frame + moves (idle, walk, run, punch), Body presets + sliders, Bu
 ## Hero + Walker sets (live Nov 23)
 Made in Blender from code with his own Mech Kit builder: tools/blender/parts_all.py (pip install bpy, then python3 parts_all.py writes models/parts_all.js). Hero = Gundam-style (10 parts), Walker = walking tank (11 parts incl. the Rotary cannon arm from his mech picture). Two starter mechs, Hero and Walker, are first in the Starter list, so starter numbers moved by 2. He has not given feedback on them yet.
 
+## Stance by move (his rule, live Nov 23, first pass)
+"Each stance has to be appropriate to its moves." Idle = the picked stance. Walk = Relaxed carry if the weapon has one, else Ready. Run = Ready. Punch = Ready and the free hand punches (mirrored clip punch_L when only the right hand holds a weapon). Action poses only on Idle. Code: moveNow / modeNow / moveFor in index.html. Not done yet: a real attack per weapon type, a carry for every weapon, blending between stances.
+
 ## Photo mode (live Nov 23)
 photo.js. Photo button: freeze any move on any frame, stance, camera angles, lens, 7 backdrops, 3 lights, floor grid, Save picture / Share. index.html calls MF_PHOTO.init and reads MF_PHOTO.frozen.
 
@@ -37,12 +40,13 @@ Last run Nov 23 3am on the live page: paint ALL OK, weapon 25/25 clean on all si
 
 ## Next up, in order
 1. His feedback: paint on a real phone, the Hero + Walker sets, Photo mode (none tested on a real phone yet, only the bots).
-2. Other stance notes: Relaxed shield closer, two sabers crossing. (Bazooka is done: it rests just above the shoulder part, level, clean on six bodies.)
+2. Stances: weapon attacks per weapon type (so Punch fits the weapon), a carry for every weapon, then the older notes (Relaxed shield closer, two sabers crossing). (Bazooka is done: it rests just above the shoulder part, level, clean on six bodies.)
 3. Second pass on the sets from his notes; more variants per spot (his kit rule: think more than 3).
 4. Item 7, More moves.
 Parked ideas (Add-ons in PLAN.md): emblem editor, share codes, part scale / hide sub-pieces, diorama with several mechs, paint presets, Part Maker upgrades, more decals, bits slider, bloom + floating effects.
 
 ## Open questions for him (also at the bottom of PLAN.md)
+- S3 Stance by move: are walk = carry low, run / punch = ready, free hand punches the right calls? What should Punch do for each weapon?
 - S1 What looks off on the Hero + Walker sets?
 - S2 Is the bazooka's new resting spot what he meant by 'flatter on the shoulder'?
 - P1 What should change in paint after he tries it on the phone?
@@ -52,6 +56,7 @@ Parked ideas (Add-ons in PLAN.md): emblem editor, share codes, part scale / hide
 - P5 Element bits: 10-16 per part ok, or a "how many" slider?
 
 ## His rules that matter here
+- Every stance must fit the move being played (Nov 23).
 - Go through changes with him before pushing; build together, floor by floor; show which skills are used.
 - Don't rebuild the wheel: check free open-source first (MIT / Apache / BSD / CC0 only), credit in README.
 - Check what he already has (Drive kits, project folders) before making or downloading assets.
