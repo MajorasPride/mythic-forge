@@ -110,9 +110,9 @@
     for (const L of (u.pt ? u.pt.L : [])) L.mesh.material = skinMat(L.k, 'm');
   }
   function dress(h) {
-    const spot = h.userData && h.userData.spot, id = h.userData && h.userData.p && h.userData.p.id;
+    const spot = pspot(h), id = pid(h);
     const ms = meshesOf(h);
-    ms.forEach(m => { if (m.userData.key === undefined) { m.userData.key = m.material.userData.key || 'armor'; m.userData.col0 = m.material.color.getHex(); m.userData.paintable = true; } });
+    ms.forEach(m => { if (!m.userData.paintable) { m.userData.key = m.userData.key || m.material.userData.key || (m.userData.block ? 'block' : 'armor'); m.userData.col0 = m.material.color.getHex(); m.userData.paintable = true; } });
     if (spot && B[spot] && B[spot].id !== id) { delete B[spot]; store(); }                          // a new part in this spot: its old paint goes
     if (spot && B[spot] && !h.userData.paintLoaded) { h.userData.paintLoaded = true;      // bring back saved paint
       for (const [i, d] of Object.entries(B[spot].m || {})) { const m = ms[+i]; if (!m) continue; prep(m);
@@ -127,6 +127,13 @@
   function prep(m) {
     if (m.userData.pt) return m.userData.pt;
     let g = m.geometry; g.computeBoundingSphere();
+    const P = g.parameters;
+    if (g.type === 'BoxGeometry' || g.type === 'SphereGeometry') {   // frame pieces are remade when the Body sliders move: same vertex count every time so the paint fits back on
+      const ng = g.type === 'BoxGeometry' ? new T.BoxGeometry(P.width, P.height, P.depth, 14, 14, 14) : new T.SphereGeometry(P.radius, 36, 22);
+      ng.computeBoundingSphere(); const n = ng.attributes.position.count, pc = new Float32Array(n * 4), gl = new Float32Array(n);
+      ng.setAttribute('paintC', new T.BufferAttribute(pc, 4)); ng.setAttribute('paintG', new T.BufferAttribute(gl, 1));
+      m.geometry = ng; m.userData.pt = { pc, g: gl, L: [] }; dressMesh(m, spotOf(m)); return m.userData.pt;
+    }
     const edge = g.boundingSphere.radius * 2 / 34;
     let tess = new C.Tessellate(edge, 6).modify(g);
     if (tess.attributes.position.count > 90000) tess = new C.Tessellate(edge * 2, 6).modify(g);
@@ -145,14 +152,18 @@
     const mesh = new T.Mesh(lg, skinMat(k, 'm')); mesh.userData.overlay = true; mesh.renderOrder = 2 + pt.L.length; mesh.raycast = () => {};
     m.add(mesh); const L = { k, m: mk, attr, mesh }; pt.L.push(L); return L;
   }
-  function spotOf(o) { while (o) { if (o.userData && o.userData.spot) return o.userData.spot; o = o.parent; } return null; }
-  function holderOf(o) { while (o) { if (o.userData && o.userData.spot && o.userData.p) return o; o = o.parent; } return null; }
+  // a "holder" = one paintable thing: a body part / weapon in a spot, a detail, or a frame piece (stand-in block, waist, joint cap)
+  const pspot = h => h && h.userData ? (h.userData.paintSpot || h.userData.spot || null) : null;
+  const pid = h => h && h.userData ? (h.userData.paintId || (h.userData.p && h.userData.p.id) || null) : null;
+  const ALL = () => { const o = { ...C.held }; for (const x of C.extras()) if (pspot(x)) o[pspot(x)] = x; return o; };
+  function spotOf(o) { while (o) { if (pspot(o)) return pspot(o); o = o.parent; } return null; }
+  function holderOf(o) { while (o) { if (pspot(o) && pid(o)) return o; o = o.parent; } return null; }
 
   // ---------- brushes ----------
   let sec = 'brush', brush = null, withSkin = false, brushSkin = 'chrome', both = false, glowPaint = false;
   const col = { hex: '#ff3030' };
   const ray = () => new T.Raycaster();
-  const paintables = () => { const a = []; for (const h of Object.values(C.held)) h.traverse(m => { if (m.isMesh && m.userData.paintable && m.visible) a.push(m); }); return a; };
+  const paintables = () => { const a = []; for (const h of Object.values(ALL())) h.traverse(m => { if (m.isMesh && m.userData.paintable && m.visible) a.push(m); }); return a; };
   function hitAt(x, y) {
     const r = ray(); r.setFromCamera(new T.Vector2(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 1), C.camera);
     return r.intersectObjects(paintables(), false)[0] || null;
@@ -301,46 +312,46 @@
     saveBrush();
   }
   function saveBrush() {
-    for (const [spot, h] of Object.entries(C.held)) {
+    for (const [spot, h] of Object.entries(ALL())) {
       const ms = meshesOf(h), m = {}; let any = false;
       ms.forEach((x, i) => { const pt = x.userData.pt; if (!pt) return;
         if (!pt.pc.some((v, k) => k % 4 === 3 && v > .002) && !pt.L.some(L => L.m.some(v => v > .002)) && !pt.g.some(v => v > .002)) return;
         m[i] = { pc: pack(pt.pc, 4), g: pack(pt.g, 1), L: pt.L.map(L => ({ k: L.k, m: pack(L.m, 1) })) }; any = true; });
-      if (any) B[spot] = { id: h.userData.p.id, m }; else delete B[spot];
+      if (any) B[spot] = { id: pid(h), m }; else delete B[spot];
     }
     store();
   }
   function clearPaint(spots) {
     stroke = new Map();
-    for (const s of spots) { const h = C.held[s]; if (!h) continue; for (const m of meshesOf(h)) { const pt = m.userData.pt; if (!pt) continue; remember(m);
+    for (const s of spots) { const h = ALL()[s]; if (!h) continue; for (const m of meshesOf(h)) { const pt = m.userData.pt; if (!pt) continue; remember(m);
       pt.pc.fill(0); pt.g.fill(0); for (const L of pt.L) L.m.fill(0); flag(m); } }
     endStroke();
   }
 
   // ---------- picking parts: tap one, or mark several ----------
   let tapped = null, marking = false; const marks = new Set(); const boxes = new Map();
-  function boxFor(spot, colr) { let b = boxes.get(spot); const h = C.held[spot]; if (!h) return;
+  function boxFor(spot, colr) { let b = boxes.get(spot); const h = ALL()[spot]; if (!h) return;
     if (!b) { b = new T.BoxHelper(h, colr); b.material.depthTest = false; b.renderOrder = 9; b.userData.ui = true; b.material.userData.outlineParameters = { visible: false }; C.scene.add(b); boxes.set(spot, b); }
     b.material.color.set(colr); b.setFromObject(h); }
   function refreshBoxes() {
-    for (const [s, b] of boxes) { const want = open && (marks.has(s) || s === tapped); if (!want || !C.held[s]) { C.scene.remove(b); boxes.delete(s); } }
+    for (const [s, b] of boxes) { const want = open && (marks.has(s) || s === tapped); if (!want || !ALL()[s]) { C.scene.remove(b); boxes.delete(s); } }
     if (!open) return;
-    for (const s of marks) if (C.held[s]) boxFor(s, 0x38e8ff);
-    if (tapped && C.held[tapped] && !marks.has(tapped)) boxFor(tapped, 0xffc040);
+    for (const s of marks) if (ALL()[s]) boxFor(s, 0x38e8ff);
+    if (tapped && ALL()[tapped] && !marks.has(tapped)) boxFor(tapped, 0xffc040);
   }
   function tapAt(x, y) {
-    const hit = hitAt(x, y), h = hit && holderOf(hit.object), s = h && h.userData.spot;
+    const hit = hitAt(x, y), h = hit && holderOf(hit.object), s = pspot(h);
     if (marking) { if (!s) return; marks.has(s) ? marks.delete(s) : marks.add(s); refreshBoxes(); showMarks(); return; }
     tapped = s || null; refreshBoxes(); numbers();
     if (s) { $('pTarget').value = 'part'; tip(nice(s) + ' picked: skins and Fill now go on it.'); }
   }
-  const nice = s => s.replace(/\.L$/, ' (left)').replace(/\.R$/, ' (right)').replace('back', 'backpack').replace('weapon', 'hand weapon').replace('mount', 'shoulder weapon').replace('_', ' ');
+  const nice = s => /^frame:/.test(s) ? 'frame ' + s.slice(6).replace(/\.L$/, ' (left)').replace(/\.R$/, ' (right)') : /^cap:/.test(s) ? 'joint ' + s.slice(4).replace(/\.L$/, ' (left)').replace(/\.R$/, ' (right)') : /^det:/.test(s) ? 'detail' : s.replace(/\.L$/, ' (left)').replace(/\.R$/, ' (right)').replace('back', 'backpack').replace('weapon', 'hand weapon').replace('mount', 'shoulder weapon').replace('_', ' ');
   function showMarks() { $('pMarkInfo').textContent = marks.size ? marks.size + ' marked: ' + [...marks].map(nice).join(', ') : 'Nothing marked.'; }
   // paint by number: numbers on each piece of the tapped part; tap a number to fill that piece
   function numbers() {
     const box = $('pNums'); box.innerHTML = '';
-    if (!open || !tapped || !C.held[tapped] || !$('pNumBtn').classList.contains('on')) return;
-    meshesOf(C.held[tapped]).forEach((m, i) => { const b = document.createElement('button'); b.textContent = i + 1; b.className = 'pnum';
+    if (!open || !tapped || !ALL()[tapped] || !$('pNumBtn').classList.contains('on')) return;
+    meshesOf(ALL()[tapped]).forEach((m, i) => { const b = document.createElement('button'); b.textContent = i + 1; b.className = 'pnum';
       b.onclick = () => { stroke = new Map(); fillMesh(m); endStroke(); }; b._m = m; box.append(b); });
   }
   function placeNumbers() {
@@ -435,13 +446,13 @@
     $('pBoth').onclick = e => { both = !both; e.target.classList.toggle('on', both); };
     $('pUndo').onclick = undo;
     $('pClearPart').onclick = () => tapped ? clearPaint([tapped]) : tip('Tap a part first');
-    $('pClearAll').onclick = () => clearPaint(Object.keys(C.held));
+    $('pClearAll').onclick = () => clearPaint(Object.keys(ALL()));
     $('pGroup').onchange = showSkins;
     $('pTile').value = S.tile; $('pTile').onchange = e => { S.tile = +e.target.value; redressAll(); store(); };
     $('pClearSkins').onclick = () => { S.skins = { slot: {}, part: {} }; redressAll(); store(); };
     $('pMark').onclick = e => { marking = !marking; e.target.classList.toggle('on', marking); if (marking) { brush = null; syncBrushUI(); tip('Tap parts to mark them (tap again to unmark).'); } refreshBoxes(); };
     $('pMarkClear').onclick = () => { marks.clear(); refreshBoxes(); showMarks(); };
-    $('pFillMarked').onclick = () => { if (!marks.size) return tip('Mark some parts first'); stroke = new Map(); for (const s of marks) if (C.held[s]) meshesOf(C.held[s]).forEach(fillMesh); endStroke(); };
+    $('pFillMarked').onclick = () => { if (!marks.size) return tip('Mark some parts first'); stroke = new Map(); for (const s of marks) if (ALL()[s]) meshesOf(ALL()[s]).forEach(fillMesh); endStroke(); };
     const groupsUI = () => { $('pGroups').innerHTML = '<option value="">Saved groups...</option>' + S.groups.map((g, i) => `<option value="${i}">${g.n} (${g.s.length})</option>`).join(''); };
     $('pGroupSave').onclick = () => { if (!marks.size) return tip('Mark some parts first'); const n = $('pGroupName').value.trim() || 'Group ' + (S.groups.length + 1); S.groups.push({ n, s: [...marks] }); $('pGroupName').value = ''; groupsUI(); store(); tip('Saved "' + n + '"'); };
     $('pGroups').onchange = e => { const g = S.groups[+e.target.value]; if (!g) return; marks.clear(); g.s.forEach(s => marks.add(s)); refreshBoxes(); showMarks(); $('pTarget').value = 'marked'; };
@@ -461,11 +472,11 @@
       C = ctx; T = ctx.THREE;
       let d = null; try { d = JSON.parse(localStorage.getItem('mf-paint2')); } catch (e) {}
       S = Object.assign(blank(), d && d.S); B = (d && d.B) || {};
-      buildUI(); wirePointer(); light(false);
+      buildUI(); wirePointer(); light(false); this.ready = true;
     },
     dress,
     setOpen(on) { open = on; if (!on) { brush = null; marking = false; $('pMark').classList.remove('on'); syncBrushUI(); ringAt(null); } refreshBoxes(); numbers(); },
-    frame(t) { if (MATS()) MATS().tick(t); if (open) { for (const [s, b] of boxes) if (C.held[s]) b.setFromObject(C.held[s]); placeNumbers(); } },
+    frame(t) { if (MATS()) MATS().tick(t); if (open) { for (const [s, b] of boxes) if (ALL()[s]) b.setFromObject(ALL()[s]); placeNumbers(); } },
     _test: { hit: (x, y) => hitAt(x, y), dab: (p, how) => { stroke = new Map(); dab(p, how); endStroke(); }, fill: m => { stroke = new Map(); fillMesh(m); endStroke(); }, setBrush: b => { brush = b; syncBrushUI(); }, setColour: h => { col.hex = h; }, skin: k => putSkin(k), state: () => ({ S, B }), undo, element, tapAt, marks, both: v => { both = v; }, withSkin: (v, k) => { withSkin = v; if (k) brushSkin = k; } }
   };
 })();

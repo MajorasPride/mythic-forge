@@ -248,12 +248,14 @@ function shape(p, isStandard = false) {
     box.position.copy(tip).multiplyScalar(.5);
     box.material = name === 'waist' ? CAP : blockMat.clone(); box.userData.bone = name;   // waist reads as dark frame, not a gray brick      // each block knows its bone (for tapping)
     box.visible = !bone.userData.partId;
-    bone.add(box); bone.userData.block = box;
+    box.userData.paintSpot = 'frame:' + name; box.userData.paintId = 'block'; box.userData.block = name !== 'waist';   // frame pieces take paint too
+    bone.add(box); bone.userData.block = box; if (window.MF_PAINT && MF_PAINT.ready) MF_PAINT.dress(box);
     // joint caps (Nov 22, step 1 'bold silhouette'): a dark ball at each limb joint so there are no see-through gaps
     if (bone.userData.cap) bone.remove(bone.userData.cap);
     if (/^(forearm|shin)\./.test(name)) {   // small caps at elbow and knee only
       const cap = new THREE.Mesh(new THREE.SphereGeometry(Math.min(w, dep) * .42, 12, 8), CAP); cap.userData.key = 'joint';
-      bone.add(cap); bone.userData.cap = cap;
+      cap.userData.paintSpot = 'cap:' + name; cap.userData.paintId = 'cap';
+      bone.add(cap); bone.userData.cap = cap; if (window.MF_PAINT && MF_PAINT.ready) MF_PAINT.dress(cap);
     }
     bone.userData.size = [w, tip.length(), dep]; bone.userData.tip = tip;
     bone.userData.restWorld = new THREE.Matrix4().compose(head, bone.userData.restQ, new THREE.Vector3(1, 1, 1));
@@ -554,7 +556,7 @@ function pick(id) {
 function selectBone(n) {
   if (n === selBone) return;
   selBone = n;
-  for (const [name, b] of Object.entries(bones)) if (b.userData.block) b.userData.block.material.color.set(name === BONE_OF(n || '') ? 0xd8823a : 0x8d8b85);
+  for (const [name, b] of Object.entries(bones)) if (b.userData.block && !b.userData.block.material.userData.skin) b.userData.block.material.color.set(name === BONE_OF(n || '') ? 0xd8823a : 0x8d8b85);
   document.getElementById('bonePick').value = n || '';
   document.querySelectorAll('#weaponRow [data-spot]').forEach(b => b.classList.toggle('on', b.dataset.spot === n || (b.dataset.spot === 'mount.L' && n === 'mount.R')));
   showChoices();
@@ -617,7 +619,8 @@ for (const [key, label] of [['armor', 'Main'], ['armor2', 'Second'], ['accent', 
   inp.value = '#' + (custom[key] || '888888'); inp.oninput = () => { custom[key] = inp.value.slice(1); paintAll(); save(); };
   document.getElementById('customRow').append(l);
 }
-MF_PAINT.init({ THREE, toon, scene, camera, renderer, controls, held, colours: () => colours(), paintAll: () => paintAll(), Tessellate: TessellateModifier, lights: { hemi, sun, rim } });
+MF_PAINT.init({ THREE, toon, scene, camera, renderer, controls, held, colours: () => colours(), paintAll: () => paintAll(), Tessellate: TessellateModifier, lights: { hemi, sun, rim },
+  extras: () => [...detailBits, ...Object.values(bones).flatMap(b => [b.userData.block, b.userData.cap]).filter(Boolean)] });
 
 // tap (not drag) on the mech picks the spot
 const ray = new THREE.Raycaster(), down = {};
@@ -708,7 +711,7 @@ function detailTap(ray) {
 }
 async function buildDetails() {
   for (const h of detailBits.splice(0)) h.parent && h.parent.remove(h);
-  const k = params.height, S = 2.3 * k * Math.sqrt(params.bulk);
+  const k = params.height, S = 2.3 * k * Math.sqrt(params.bulk); let newUid = false;
   for (const [i, d] of details.entries()) {
     const lib = DETAILS.find(x => x.id === d.id); if (!lib || !bones[d.bone]) continue;
     const model = await loadPart(lib, false);
@@ -720,11 +723,13 @@ async function buildDetails() {
       h.position.fromArray(p);
       h.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3().fromArray(n).normalize())
         .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), d.turn * Math.PI / 180 * (bn === d.bone ? 1 : -1)));
-      h.add(m); h.userData.det = i; h.userData.p = lib;
+      if (!d.uid) { d.uid = Math.random().toString(36).slice(2, 8); newUid = true; }
+      h.add(m); h.userData.det = i; h.userData.p = lib; h.userData.paintSpot = 'det:' + d.uid + (bn === d.bone ? '' : 'm'); h.userData.paintId = lib.id;
       bones[bn].add(h); detailBits.push(h); paintPart(h);
       if (i === selDet) mark(h, true);
     }
   }
+  if (newUid) save();
 }
 function mark(h, on) { h.traverse(m => { if (m.isMesh) m.material.emissive && m.material.emissive.setHex(on ? 0x553311 : 0); }); }
 function selectDetail(i) {
