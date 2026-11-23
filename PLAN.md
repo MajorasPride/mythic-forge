@@ -54,6 +54,7 @@ build-together, pro-3d-workflow, game-art, ponytail, repo-scout. Model: Opus.
 - Keep this file correct; update Now and the Log every session.
 
 ## Log (newest first)
+- Nov 22, 2026: he said some heads still look off. Cause: heads were stretched so crests/horns/antennae counted as head height (Titanheart's face got squashed, Bulwark got big). Now every head uses one even size and crests stick up. Waiting for his look before push.
 - Nov 22, 2026: items 1-4 built: Backpack spot, Paint (11 kit schemes + My colours), Starter mechs (Vanguard, Bulwark, Titanheart, Ranger, Falcon, Paladin, Wraith, Mule, Patrol, Lionheart), Random. Parts now carry their material keys so they can be repainted. Tested at phone size: all starters, random, custom colour, backpack sits on the back, kept after reload, no errors. He reminded that old Mythic Forge has paint: logged to bring it over later. He said it works; pushed.
 - Nov 22, 2026: he said moving the camera is hard. Camera now: smooth drag, can't go under the floor, 2 fingers zoom + slide, Front / Side / 3/4 / Back buttons, picking a spot glides in on it, closing Build glides back out, and the picture lifts above an open panel. Pushed with his OK.
 - Nov 22, 2026: still hard on his phone: added press-and-hold buttons (turn left/right, zoom in/out, look higher/lower) under the view buttons; no finger dragging needed. Then added Slide left/right and labels, in a 2-column grid.

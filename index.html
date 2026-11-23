@@ -283,6 +283,10 @@ function fitPart(spot) {
   if (spot === 'back') {           // on the back of the chest, two thirds up
     const S = len / 1.05; h.quaternion.copy(toBone); model.scale.setScalar(S);
     h.position.copy(new THREE.Vector3(0, len * .62, -d * .5).applyQuaternion(toBone));
+  } else if (SLOT_OF(spot) === 'head') {
+    // heads: one even size for every head (the kit's helmets are about 0.42 tall without crests),
+    // so crests, horns and antennae stick up instead of squashing the face
+    const S = len / .42; h.quaternion.copy(toBone); model.scale.setScalar(S);
   } else if (p.mode === 'box') { const sy = len / ph; h.quaternion.copy(toBone); model.scale.set(keep(w, pw, sy), sy, keep(d, pd, sy)); }
   else if (p.mode === 'limb') {
     const dir = b.userData.tip.clone().applyQuaternion(toWorld).normalize();
