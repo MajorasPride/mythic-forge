@@ -25,11 +25,14 @@
   select { font: inherit; font-size: 15px; min-height: 38px; border-radius: 8px; background: #2c2c30; color: #eee; border: 1px solid #4a4a4e; padding: 0 8px; }
   .sw { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 50%; }
   .hint { opacity: .65; margin: 0 0 10px; }
+  #views { position: absolute; top: 40px; right: 8px; display: flex; flex-direction: column; gap: 6px; }
+  #views button { min-height: 40px; min-width: 64px; font-size: 14px; padding: 0 10px; background: #2c2c30cc; }
 </style>
 </head>
 <body>
 <div id="view"></div>
 <div id="top"><span>Mythic Forge</span><small>Phase 3 · Body parts</small></div>
+<div id="views"><button data-view="front">Front</button><button data-view="side">Side</button><button data-view="angle">3/4</button><button data-view="back">Back</button></div>
 <div id="body"><div id="presets"></div><div id="sliders"></div></div>
 <div id="build">
   <p class="hint" id="buildHint">Tap a spot on the mech (or pick it here), then pick a body part for it.</p>
@@ -68,7 +71,22 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 200);
 camera.position.set(14, 8, 16);
 const controls = new OrbitControls(camera, renderer.domElement);   // drag to turn, pinch to zoom
-controls.target.set(0, 5, 0); controls.update();
+controls.target.set(0, 5, 0);
+// easier on a phone: smooth drag, can't go under the floor or too far, 2 fingers = zoom + slide
+controls.enableDamping = true; controls.dampingFactor = .12; controls.rotateSpeed = .8;
+controls.minDistance = 5; controls.maxDistance = 60; controls.maxPolarAngle = Math.PI * .49;
+controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
+controls.update();
+// camera moves glide instead of jumping: set camTo = {target, pos} and the loop eases toward it
+let camTo = null;
+function glide(target, pos) { camTo = { target: target.clone(), pos: pos.clone() }; }
+let mechTop = 10;
+function viewAll(dirName) {
+  const D = { front: [0, .15, 1], side: [1, .15, 0], angle: [.75, .3, .9], back: [0, .15, -1] }[dirName] || [.75, .3, .9];
+  const t = new THREE.Vector3(0, mechTop * .5, 0), dir = new THREE.Vector3(...D).normalize();
+  glide(t, t.clone().addScaledVector(dir, Math.max(mechTop * 2.3, 14)));
+}
+document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => viewAll(b.dataset.view));
 scene.background = new THREE.Color(0x17181c);
 scene.add(new THREE.HemisphereLight(0xdfe6ff, 0x30302c, 1.6));
 const sun = new THREE.DirectionalLight(0xffffff, 2.4); sun.position.set(6, 12, 8); scene.add(sun);
@@ -249,10 +267,17 @@ function pick(id) {
   showChoices(); save();
 }
 function selectBone(n) {
+  if (n === selBone) return;
   selBone = n;
   for (const [name, b] of Object.entries(bones)) if (b.userData.block) b.userData.block.material.color.set(name === n ? 0xd8823a : 0x8d8b85);
   document.getElementById('bonePick').value = n || '';
   showChoices();
+  if (n) {   // zoom in on the picked spot, keeping the same viewing angle
+    const p = new THREE.Vector3(); bones[n].getWorldPosition(p);
+    const tip = bones[n].userData.tip.clone().applyQuaternion(bones[n].userData.restQ).multiplyScalar(.5); p.add(tip);
+    const dir = camera.position.clone().sub(controls.target).normalize();
+    glide(p, p.clone().addScaledVector(dir, Math.max(bones[n].userData.size[1] * 3.5, 7)));
+  } else if (building === false) viewAll('angle');
 }
 function showChoices() {
   const box = document.getElementById('choices'); box.innerHTML = '';
@@ -333,6 +358,14 @@ renderer.setAnimationLoop(() => {
     mixer.update(clock.getDelta());   // play the move
     keepShape();                      // then shift every joint to this mech's shape
   }
+  if (camTo) {
+    controls.target.lerp(camTo.target, .15); camera.position.lerp(camTo.pos, .15);
+    if (camera.position.distanceTo(camTo.pos) < .05) camTo = null;
+  }
+  controls.update();
+  // when a panel is open, shift the picture up so the mech isn't hidden behind it
+  const panel = document.querySelector('#body.open, #build.open'), lift = panel ? panel.offsetHeight / 2 : 0;
+  if (lift) camera.setViewOffset(innerWidth, innerHeight, 0, lift, innerWidth, innerHeight); else camera.clearViewOffset();
   outline.render(scene, camera);
 });
 </script>
