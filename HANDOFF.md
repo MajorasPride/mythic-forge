@@ -1,4 +1,4 @@
-# Mythic Forge — Handoff (updated Nov 23 2026, 1:40am)
+# Mythic Forge — Handoff (updated Nov 23 2026, 3am)
 
 Read this first in a new chat. The full plan, rules and log are in PLAN.md.
 
@@ -9,7 +9,13 @@ Read this first in a new chat. The full plan, rules and log are in PLAN.md.
 - The old Mythic Forge (creatures, 70 bodies) lives in the titan-clash repo under myth-forge/. This repo is the fresh start (mechs first).
 
 ## What is live
-Standard mech frame + moves (idle, walk, run, punch), Body presets + sliders, Build (body parts for every spot, backpack, weapons, stances), Details, Part Maker, Starter mechs, Random, and since Nov 23: Paint.
+Standard mech frame + moves (idle, walk, run, punch), Body presets + sliders, Build (body parts for every spot, backpack, weapons, stances), Details, Part Maker, Starter mechs, Random, and since Nov 23: Paint, the Hero + Walker part sets, and Photo mode.
+
+## Hero + Walker sets (live Nov 23)
+Made in Blender from code with his own Mech Kit builder: tools/blender/parts_all.py (pip install bpy, then python3 parts_all.py writes models/parts_all.js). Hero = Gundam-style (10 parts), Walker = walking tank (11 parts incl. the Rotary cannon arm from his mech picture). Two starter mechs, Hero and Walker, are first in the Starter list, so starter numbers moved by 2. He has not given feedback on them yet.
+
+## Photo mode (live Nov 23)
+photo.js. Photo button: freeze any move on any frame, stance, camera angles, lens, 7 backdrops, 3 lights, floor grid, Save picture / Share. index.html calls MF_PHOTO.init and reads MF_PHOTO.frozen.
 
 ## Paint (went live Nov 23)
 Files: paint.js (all paint code), materials.js (379 skins, from the old forge), textures-bark.js (bark photos, Lynocs CC0). index.html calls MF_PAINT.init / dress / setOpen / frame.
@@ -24,20 +30,21 @@ Phone layout: one scrolling bottom row, moves hide while painting, short panel, 
 
 ## Bots (run before pushing)
 - python3 tools/bot/paint_bot.py index.html  -> must say ALL OK (paint or phone-layout changes)
-- python3 tools/bot/weapon_bot.py standard:0 -> 0 clips, 0 floating (anything that moves or holds parts)
-- python3 tools/bot/shoulder_bot.py standard -> all OK
+- python3 tools/bot/weapon_bot.py standard:0 heavy:1 brawler:4 squat:9 sleek:5 scout:6 -> 0 clips, 0 floating (anything that moves or holds parts; body:starter number, 0 = Hero, 1 = Walker)
+- python3 tools/bot/shoulder_bot.py standard heavy -> all OK
 They need playwright + chrome and three.js 0.170 at /tmp/t/node_modules/three (npm i three@0.170.0 in /tmp/t).
-Last run Nov 23 on the live page: paint ALL OK, weapon 25/25 clean, shoulder 56/56 ok.
+Last run Nov 23 3am on the live page: paint ALL OK, weapon 25/25 clean on all six bodies above, shoulder 72/72 ok on both.
 
 ## Next up, in order
-1. His phone feedback on paint (not tested on a real phone yet, only the bot).
-2. Bazooka stance fix: flatter on the shoulder, weapon bot must be fully clean on every body (it clipped on some bodies; only standard:0 was re-run Nov 23).
-3. Other stance notes: Relaxed shield closer, two sabers crossing.
-4. Hero / Heavy part sets (bigger hero torso; hero foot with taller heel, shorter toe). His heavy-set references: BattleTech-style walkers, Archax.
-5. Item 7, More moves.
-Parked ideas: Part Maker upgrades (angled cuts, depth + layering, stamps, trace a picture, undo + snap, export), more decals, bits slider. See Add-ons in PLAN.md.
+1. His feedback: paint on a real phone, the Hero + Walker sets, Photo mode (none tested on a real phone yet, only the bots).
+2. Other stance notes: Relaxed shield closer, two sabers crossing. (Bazooka is done: it rests just above the shoulder part, level, clean on six bodies.)
+3. Second pass on the sets from his notes; more variants per spot (his kit rule: think more than 3).
+4. Item 7, More moves.
+Parked ideas (Add-ons in PLAN.md): emblem editor, share codes, part scale / hide sub-pieces, diorama with several mechs, paint presets, Part Maker upgrades, more decals, bits slider, bloom + floating effects.
 
 ## Open questions for him (also at the bottom of PLAN.md)
+- S1 What looks off on the Hero + Walker sets?
+- S2 Is the bazooka's new resting spot what he meant by 'flatter on the shoulder'?
 - P1 What should change in paint after he tries it on the phone?
 - P2 Keep the one-row phone layout? (default yes)
 - P3 Joint caps follow the scheme's joint colour now. Keep? (default keep)

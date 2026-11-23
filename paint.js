@@ -594,7 +594,7 @@
     if (!base) base = { hemi: C.lights.hemi.intensity, sun: C.lights.sun.intensity, rim: C.lights.rim.intensity, bg: C.scene.background.clone() };
     const k = S.bright * (night ? .22 : 1);
     C.lights.hemi.intensity = base.hemi * k; C.lights.sun.intensity = base.sun * k; C.lights.rim.intensity = base.rim * (night ? .6 : 1) * S.bright;
-    C.scene.background.copy(night ? new T.Color(0x05060a) : base.bg);
+    if (C.scene.background && C.scene.background.isColor) C.scene.background.copy(night ? new T.Color(0x05060a) : base.bg);   // a photo backdrop stays as it is
     glowK.value = S.glow * (night ? 2.2 : 1);
     if (redress) redressAll();
   }
@@ -701,6 +701,7 @@
       buildUI(); wirePointer(); light(false); this.ready = true;
     },
     dress,
+    setNight(v) { night = !!v; $('pNight').classList.toggle('on', night); light(); },
     setOpen(on) { open = on; document.body.classList.toggle('painting', on); requestAnimationFrame(() => window.dispatchEvent(new Event('resize'))); if (!on) { brush = null; marking = false; $('pMark').classList.remove('on'); syncBrushUI(); ringAt(null); } refreshBoxes(); numbers(); },
     frame(t) { if (MATS()) MATS().tick(t); if (open) { for (const [s, b] of boxes) if (ALL()[s]) b.setFromObject(ALL()[s]); placeNumbers(); } },
     _test: { decalBits: () => { let n = 0; for (const b of dBits.values()) n += b.length; return n; }, decal: (k, x, y) => { decalKind = k; placeDecal(x, y); }, wear: k => { wearKind = k; }, layers: () => showLayers(), tapped: () => tapped, hit: (x, y) => hitAt(x, y), dab: (p, how) => { stroke = new Map(); dab(p, how); endStroke(); }, fill: m => { stroke = new Map(); fillMesh(m); endStroke(); }, setBrush: b => { brush = b; syncBrushUI(); }, setColour: h => { col.hex = h; }, skin: k => putSkin(k), state: () => ({ S, B }), undo, element, tapAt, marks, both: v => { both = v; }, withSkin: (v, k) => { withSkin = v; if (k) brushSkin = k; } }

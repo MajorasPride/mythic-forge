@@ -63,6 +63,12 @@
     #pSkins { flex-wrap: wrap !important; }
   }
   body.painting #moves, body.painting #bones { display: none !important; }
+  #photoBar { position: absolute; left: 0; right: 0; bottom: 0; padding: 8px 10px; background: #1c1c1ef2; display: none; font-size: 14px; z-index: 4; }
+  body.photo #photoBar { display: block; }
+  body.photo #bar, body.photo #top { display: none; }
+  #photoBar .line { flex-wrap: nowrap; overflow-x: auto; margin-bottom: 6px; padding-bottom: 2px; }
+  #photoBar .line > * { flex: none; }
+  #photoBar input[type=range] { width: 120px; }
   #mkName { font: inherit; font-size: 15px; min-height: 38px; border-radius: 8px; background: #2c2c30; color: #eee; border: 1px solid #4a4a4e; padding: 0 10px; flex: 1; min-width: 140px; }
 </style>
 </head>
@@ -108,6 +114,7 @@
   <button id="detailsBtn">Details</button>
   <button id="paintBtn">Paint</button>
   <button id="makeBtn">Make</button>
+  <button id="photoBtn">Photo</button>
   <button id="bones" class="on">Bones</button>
 </div>
 
@@ -128,6 +135,8 @@
 <script src="textures-bark.js"></script>
 <script src="materials.js"></script>
 <script src="paint.js"></script>
+<!-- photo mode: pose, backdrop, lens, light, save / share a picture (photo.js) -->
+<script src="photo.js"></script>
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
@@ -200,7 +209,7 @@ const bands = new THREE.DataTexture(new Uint8Array([90, 170, 255]), 3, 1, THREE.
 bands.minFilter = bands.magFilter = THREE.NearestFilter; bands.needsUpdate = true;
 const toon = (color, glow) => new THREE.MeshToonMaterial({ color, gradientMap: bands, emissive: glow ? color : 0x000000, emissiveIntensity: glow ? 1 : 0 });
 const outline = new OutlineEffect(renderer, { defaultThickness: 0.006, defaultColor: [0, 0, 0] });
-scene.add(new THREE.GridHelper(30, 30, 0x555555, 0x333333));
+const grid = new THREE.GridHelper(30, 30, 0x555555, 0x333333); scene.add(grid);
 function fit() { document.body.style.setProperty('--bar', document.getElementById('bar').offsetHeight + 'px'); outline.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
 addEventListener('resize', fit); fit();
 
@@ -287,7 +296,7 @@ function shape(p, isStandard = false) {
     bone.userData.restWorld = new THREE.Matrix4().compose(head, bone.userData.restQ, new THREE.Vector3(1, 1, 1));
   }
   // keep the whole mech in view: aim at its middle, back off for tall mechs
-  const top = f.head.tail[2], dir = camera.position.clone().sub(controls.target).normalize();
+  const top = f.head.tail[2], dir = camera.position.clone().sub(controls.target).normalize(); mechTop = top;
   if (typeof refreshParts === 'function') refreshParts();   // body parts stretch to the new shape
   controls.target.set(0, top * .5, 0);
   camera.position.copy(controls.target).addScaledVector(dir, fitDist(top));
@@ -532,7 +541,7 @@ function inside(a, b) {
     b.traverse(m => { if (m.isMesh) { const p = m.geometry.attributes.position, M = inv.clone().multiply(m.matrixWorld); for (let i = 0; i < p.count; i++) bx.expandByPoint(v.fromBufferAttribute(p, i).applyMatrix4(M)); } });
     const c = bx.getCenter(new THREE.Vector3()), e = bx.getSize(new THREE.Vector3()).multiplyScalar(.42); b.userData._ib = new THREE.Box3(c.clone().sub(e), c.clone().add(e)); b.userData._ibOf = b.children[0]; }
   let hit = false;
-  a.traverse(m => { if (!hit && m.isMesh) { const p = m.geometry.attributes.position, st = Math.max(1, p.count / 300 | 0); for (let i = 0; i < p.count && !hit; i += st) hit = b.userData._ib.containsPoint(v.fromBufferAttribute(p, i).applyMatrix4(m.matrixWorld).applyMatrix4(inv)); } });
+  a.traverse(m => { if (!hit && m.isMesh) { const p = m.geometry.attributes.position, st = Math.max(1, p.count / 1500 | 0); for (let i = 0; i < p.count && !hit; i += st) hit = b.userData._ib.containsPoint(v.fromBufferAttribute(p, i).applyMatrix4(m.matrixWorld).applyMatrix4(inv)); } });
   return hit;
 }
 // does any point of the pad stick into the weapon? (checked in the weapon's own space, ignoring where its base touches)
@@ -811,7 +820,7 @@ const STANCE = {
   pistol:  { ua: [-82, 0, 4], fa: [-8, 0, 0], aim: [0, .02, 1] },                 // half raised, aimed
   rifle:   { ua: [-28, 0, 6], fa: [-92, 0, 0], aim: [-.38, -.18, 1], two: .58 },     // two hands across the chest, barrel forward and down (his references, Nov 22)
   gatling: { ua: [-12, 0, 10], fa: [-78, 0, 0], aim: [0, -.08, 1], two: .38, wide: 1 },     // chainsaw grip at the hip
-  bazooka: { ua: [-42, 0, 66], fa: [-108, 0, 0], aim: [.22, .14, 1], two: .5, wide: .6, rest: 1 },    // tube resting on top of the shoulder, hand under it (his references)
+  bazooka: { ua: [-42, 0, 66], fa: [-108, 0, 0], aim: [.14, .03, 1], two: .5, wide: .6, rest: 1, top: 1 },    // tube resting on top of the shoulder, hand under it (his references)
   shield:  { ua: [-38, 0, -8], fa: [-80, 0, 0] },                                // shield low and in front of the body (his references)
 };
 const RELAXED = {   // Stance: Relaxed (his references, Nov 22): weapons carried low and easy
@@ -835,7 +844,7 @@ const ACTION = {
   pistol:  { body: { ...WIDE, waist: [0, 30, 0], chest: [0, 28, 0], head: [0, -40, 0] }, ua: [-90, 0, -4], fa: [-2, 0, 0], aim: [0, .02, 1], free: { ua: [-10, 0, 25], fa: [-20, 0, 0] } }, // side-on, arm straight out, aimed
   rifle:   { body: { ...LUNGE, waist: [0, 14, 0], chest: [4, 16, 0], head: [0, -14, 0] }, ua: [-86, 0, -14], fa: [-14, 0, 0], aim: [0, .02, 1], two: .6 },                          // aiming down the barrel
   gatling: { body: { ...WIDE, chest: [-8, 0, 0] }, ua: [-12, 0, 10], fa: [-78, 0, 0], aim: [0, -.04, 1], two: .38 },                                                                   // braced, leaning back into the fire
-  bazooka: { body: { ...KNEEL, chest: [6, 8, 0] }, ua: [-42, 0, 66], fa: [-108, 0, 0], aim: [.22, .1, 1], two: .5, rest: 1 },                                                         // kneeling shot
+  bazooka: { body: { ...KNEEL, chest: [6, 8, 0] }, ua: [-42, 0, 66], fa: [-108, 0, 0], aim: [.14, .03, 1], two: .5, rest: 1, top: 1 },                                                         // kneeling shot
   shield:  { body: { ...WIDE, chest: [10, 0, 0] }, ua: [-70, 0, 0], fa: [-75, 0, 0] },                                                                                                // braced behind the shield
 };
 let stanceMode = 'ready';
@@ -869,6 +878,28 @@ function actionBody() {   // whole-body pose for Stance: Action (the right hand'
   if (groundY !== null) { bones.pelvis.position.y -= (low - groundY) / (bones.pelvis.parent.getWorldScale(v).y || 1); bones.pelvis.updateMatrixWorld(true); }
 }
 const _box = new THREE.Box3();
+function aimHand(st, h, hand, out) {
+  if (!st.aim) return;
+  _d.set(0, 1, 0).applyQuaternion(h.getWorldQuaternion(_w));
+  _t.set(st.aim[0] * out, st.aim[1], st.aim[2]).normalize();
+  _q.setFromUnitVectors(_d, _t); hand.getWorldQuaternion(_w); hand.parent.getWorldQuaternion(_p);
+  hand.quaternion.copy(_p.invert().multiply(_q).multiply(_w)); hand.updateMatrixWorld(true);
+}
+// Weapons that rest on the shoulder (bazooka): slide the wrist straight up or down until the tube sits just clear of the top of
+// the shoulder part, whatever the pad's size or the move being played (Nov 23: his "flatter on the shoulder" note; the bot must be clean).
+function restOnPad(side, st, h, hand, pad, out, ua) {
+  const w0 = hand.getWorldPosition(new THREE.Vector3()), step = .12 * params.height, t = new THREE.Vector3();
+  const at = dy => { setLocal(bones['upper_arm.' + side], ua, side); setLocal(bones['forearm.' + side], st.fa, side);
+    reach(side, t.copy(w0).setY(w0.y + dy)); aimHand(st, h, hand, out); return inside(h, pad); };
+  let inY, outY;
+  if (at(0)) { inY = 0; outY = null; for (let k = 1; k <= 18; k++) { if (!at(k * step)) { outY = k * step; break; } inY = k * step; }
+    if (outY === null) {              // the arm can't reach high enough: swing the elbow out and forward instead (the old way)
+      const u = ua.slice(); for (let k = 0; k < 12; k++) { u[2] += 6; u[0] -= 3; setLocal(bones['upper_arm.' + side], u, side); setLocal(bones['forearm.' + side], st.fa, side); aimHand(st, h, hand, out); if (!inside(h, pad)) break; }
+      return; } }
+  else { outY = 0; inY = null; for (let k = 1; k <= 6; k++) { if (at(-k * step)) { inY = -k * step; break; } outY = -k * step; } if (inY === null) { at(0); return; } }
+  for (let k = 0; k < 3; k++) { const mid = (inY + outY) / 2; if (at(mid)) inY = mid; else outY = mid; }
+  at(outY + .06 * params.height);
+}
 function aimWrists() {   // name kept: runs every frame after the move plays
   if (groundY === null && bones['foot.L']) { const v = new THREE.Vector3(); bones.pelvis.updateWorldMatrix(true, true); groundY = Math.min(bones['foot.L'].getWorldPosition(v).y, bones['foot.R'].getWorldPosition(new THREE.Vector3()).y); }
   actionBody();
@@ -879,17 +910,13 @@ function aimWrists() {   // name kept: runs every frame after the move plays
     const h = held['weapon.' + side], hand = bones['hand.' + side], pad = held['shoulder.' + side], ua = st.ua.slice();
     for (let k = 0; k < 10; k++) {       // weapons that rest on the shoulder lift the arm until they clear the shoulder part
       setLocal(bones['upper_arm.' + side], ua, side); setLocal(bones['forearm.' + side], st.fa, side);
-      if (st.aim) {                     // turn the wrist so the weapon points the stance's way
-        _d.set(0, 1, 0).applyQuaternion(h.getWorldQuaternion(_w));
-        _t.set(st.aim[0] * out, st.aim[1], st.aim[2]).normalize();
-        _q.setFromUnitVectors(_d, _t); hand.getWorldQuaternion(_w); hand.parent.getWorldQuaternion(_p);
-        hand.quaternion.copy(_p.invert().multiply(_q).multiply(_w)); hand.updateMatrixWorld(true);
-      }
+      aimHand(st, h, hand, out);        // turn the wrist so the weapon points the stance's way
       // lift the arm (a little out, a little forward) while the weapon is in the shoulder part or dips into the floor (bot, Nov 22)
-      const inPad = pad && (st.rest || k < 4) && inside(h, pad), low = _box.setFromObject(h).min.y < .02;
+      const inPad = pad && !st.top && (st.rest || k < 4) && inside(h, pad), low = _box.setFromObject(h).min.y < .02;
       if (!inPad && !low) break;
       ua[2] += 6; ua[0] -= 3;
     }
+    if (st.top && pad) restOnPad(side, st, h, hand, pad, out, ua);
     if (st.wide) wide = Math.max(wide, st.wide);
     const other = side === 'L' ? 'R' : 'L';
     if (st.two && !held['weapon.' + other]) {   // free hand grabs the weapon further along
@@ -902,12 +929,20 @@ function aimWrists() {   // name kept: runs every frame after the move plays
   }
 }
 
+MF_PHOTO.init({ THREE, scene, camera, renderer, outline, controls, moves, get mixer() { return mixer; }, lights: { hemi, sun, rim }, grid, skeleton: () => skeletonLines,
+  play: n => play(n), viewAll: v => viewAll(v), glide, fitDist, mechTop: () => mechTop, currentMove: () => current && current.getClip().name,
+  setStance: m => { const b = document.querySelector(`[data-stance="${m}"]`); if (b) b.click(); }, closePanels: () => openPanel('') });
+document.getElementById('photoBtn').onclick = () => MF_PHOTO.enter();
+
 // ---- 4. the loop
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
   if (mixer) {
-    for (const b of Object.values(bones)) if (b.userData.stdPos) b.position.copy(b.userData.stdPos);   // start from Standard
-    const dt = clock.getDelta(); mixer.update(MF_PAINT.frozen ? 0 : dt);   // play the move (holds still while a paint brush is on)
+    // start every frame from the move's own pose: the mixer skips joints whose value didn't change (a held or frozen frame),
+    // so without this the stance tweaks from the last frame would pile up (legs slowly spreading while frozen)
+    for (const b of Object.values(bones)) { if (b.userData.stdPos) b.position.copy(b.userData.stdPos); if (b.userData.mixQ) b.quaternion.copy(b.userData.mixQ); }
+    const dt = clock.getDelta(); mixer.update(MF_PAINT.frozen || MF_PHOTO.frozen ? 0 : dt);
+    for (const b of Object.values(bones)) (b.userData.mixQ || (b.userData.mixQ = new THREE.Quaternion())).copy(b.quaternion);   // play the move (holds still while a paint brush is on)
     keepShape();                      // then shift every joint to this mech's shape
     aimWrists();                      // and turn wrists so held weapons never point back into the body
   }
@@ -919,7 +954,7 @@ renderer.setAnimationLoop(() => {
   controls.update();
   // when a panel is open, shift the picture up so the mech isn't hidden behind it
   MF_PAINT.frame(clock.elapsedTime);
-  const panel = document.querySelector('#body.open, #build.open, #details.open, #paint.open'), lift = panel ? panel.offsetHeight / 2 : 0;
+  const panel = document.querySelector('#body.open, #build.open, #details.open, #paint.open, body.photo #photoBar'), lift = panel ? panel.offsetHeight / 2 : 0;
   if (lift) camera.setViewOffset(innerWidth, innerHeight, 0, lift, innerWidth, innerHeight); else camera.clearViewOffset();
   outline.render(scene, camera);
 });
