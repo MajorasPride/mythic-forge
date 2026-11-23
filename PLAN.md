@@ -1,7 +1,7 @@
 # Mythic Forge (fresh start) — Plan & Rules
 
 ## Now
-Mythic Forge rebuilt from the ground up (Nov 22, 2026). Phase 2 of 5 done and live (pushed Nov 22 with his OK): Body panel with 6 presets + 8 sliders reshaping the frame live, moves keep playing.
+Mythic Forge rebuilt from the ground up (Nov 22, 2026). Phase 3 of 5 done and live (pushed Nov 22 with his OK): Body panel with 6 presets + 8 sliders reshaping the frame live, moves keep playing.
 Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
 
 ## What it is (Blueprint)
@@ -15,7 +15,7 @@ Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
 0. Brainstorm — done Nov 22.
 1. (done Nov 22) Smallest version that runs: Standard mech frame + idle, walk, run, punch buttons. Done when: it loads on the S23 Ultra and every button plays its move.
 2. (done Nov 22) Real sliders: 6 presets (standard, heavy, sleek, squat, brawler, scout) + 8 sliders (height, leg, arm, shoulder, hip, chest, head, bulk) change the frame live.
-3. Snap armor on (decided Nov 22 by voice): tap a bone Lego-style to put a part on it, with a body-part list as backup for small or hidden bones. Mirror toggle, ON by default (left part copies to the right). Every part can be resized, moved, rotated and colored, and it moves with the mech when it walks or punches. Simple blocks first.
+3. (done Nov 22) Snap armor on (decided Nov 22 by voice): tap a bone Lego-style to put a part on it, with a body-part list as backup for small or hidden bones. Mirror toggle, ON by default (left part copies to the right). Every part can be resized, moved, rotated and colored, and it moves with the mech when it walks or punches. Simple blocks first.
 4. First real parts: mech armor pieces built in Blender to fit the frame.
 5. Save and export: your mech downloads as a game file Titan Clash can use.
 
@@ -40,6 +40,7 @@ build-together, pro-3d-workflow, game-art, ponytail, repo-scout. Model: Opus.
 - Keep this file correct; update Now and the Log every session.
 
 ## Log (newest first)
+- Nov 22, 2026: Phase 3 built and pushed: Build panel. Tap a body part (or pick from the list), add Block / Plate / Tube / Wedge, edit Size / Move / Turn / Color, Delete. Mirror on by default (the twin is a true mirror image on the other side). Pieces ride on the bones so they walk/run/punch with the mech and follow body-shape changes. Build is kept on the phone between visits (localStorage; real save/export is Phase 5). Tested at phone size: tapping, list, mirror, edits, reload, no errors.
 - Nov 22, 2026: heads were too small (11 to 14 heads tall). Head size now follows the body: Standard is 9 heads tall like Gundam-style mechs (about 9 to 9.5); Heavy and Brawler about 10 (small Jaeger-style heads), Scout 9.4, Squat 8 (chunky). The Head slider still scales it.
 - Nov 22, 2026 (voice): Phase 3 details decided, next moves picked, two movement styles (heavy / fast) added to Add-ons. Research notes: Gundams boost with main thrusters, turn with side thrusters (verniers) and by swinging their limbs as weights (AMBAC); Transformers fight like martial artists and keep wheels rolling while they transform.
 - Nov 22, 2026: Phase 2 built: frame.js (same math as mech_frame.py) + Body panel. Joints move per slider, stand-in blocks are drawn per bone so they resize; moves made on Standard keep playing on any shape. Tested at phone size: no errors. Not pushed yet.
