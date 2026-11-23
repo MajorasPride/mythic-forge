@@ -1,7 +1,7 @@
 # Mythic Forge (fresh start) — Plan & Rules
 
 ## Now
-Mythic Forge rebuilt from the ground up (Nov 22, 2026). Phase 3 of 5 done and live (pushed Nov 22 with his OK): Body panel with 6 presets + 8 sliders reshaping the frame live, moves keep playing.
+Mythic Forge rebuilt from the ground up (Nov 22, 2026). Phase 3 redo in progress (Nov 22): body parts per spot instead of loose shapes. Chest done (5 choices), waiting for his look before push: Body panel with 6 presets + 8 sliders reshaping the frame live, moves keep playing.
 Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
 
 ## What it is (Blueprint)
@@ -15,11 +15,14 @@ Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
 0. Brainstorm — done Nov 22.
 1. (done Nov 22) Smallest version that runs: Standard mech frame + idle, walk, run, punch buttons. Done when: it loads on the S23 Ultra and every button plays its move.
 2. (done Nov 22) Real sliders: 6 presets (standard, heavy, sleek, squat, brawler, scout) + 8 sliders (height, leg, arm, shoulder, hip, chest, head, bulk) change the frame live.
-3. (done Nov 22) Snap armor on (decided Nov 22 by voice): tap a bone Lego-style to put a part on it, with a body-part list as backup for small or hidden bones. Mirror toggle, ON by default (left part copies to the right). Every part can be resized, moved, rotated and colored, and it moves with the mech when it walks or punches. Simple blocks first.
+3. Body parts (redone Nov 22; he meant body parts, not loose armor): every spot on the frame is a slot (head, chest, pelvis, shoulders, arms, hands, legs, feet). Tap a spot (or pick it from the list), pick a body part for it. Mirror ON by default for left/right spots. Parts are made in Blender, styled low-poly with toon shading + outlines, and stretch to fit any body shape. Done when: every spot has at least 4 choices.
+4. (merged into 3) First real parts.
 4. First real parts: mech armor pieces built in Blender to fit the frame.
 5. Save and export: your mech downloads as a game file Titan Clash can use.
 
 ## Add-ons (parking lot, reviewed at the end of each phase)
+- Details: extra loose shapes (vents, antennas, spikes) stuck on top of body parts, with size / move / turn / color. Built once on Nov 22 by mistake as 'armor', removed from the app; comes back later.
+- Recolor body parts (paint schemes).
 - Movement styles (decided Nov 22): two flavors, picked per mech.
   - Heavy / stompy (Pacific Rim): what the frame does now.
   - Fast / agile (Gundam + Transformers): boost dash (body leans forward, arms swept back, ends in a short hop), boost jump, quick sidestep bursts (side thrusters); martial-arts flips, spin kick, rolling dodge, roll-into-transform for mechs that turn into vehicles.
@@ -40,6 +43,7 @@ build-together, pro-3d-workflow, game-art, ponytail, repo-scout. Model: Opus.
 - Keep this file correct; update Now and the Log every session.
 
 ## Log (newest first)
+- Nov 22, 2026: he found the loose-armor build 'looks like ass' and said he meant body parts. Mistake: start-checklist and skills were not run/loaded before building, and his art direction (toon + outlines) was ignored. Redo: toon shading (3 light bands) + black outlines (three.js OutlineEffect, MIT) + darker stage with a rim light; Build panel now = pick a spot, pick a body part. Chest slot first: 5 chests reused from his own Mech Kit T042 designs (Cockpit, Heavy, Sleek, Emblem, Grunt hatch) via tools/blender/parts_chest.py. Each chest stretches to fit the chest spot exactly (checked on Standard and Heavy) and is kept between visits.
 - Nov 22, 2026: Phase 3 built and pushed: Build panel. Tap a body part (or pick from the list), add Block / Plate / Tube / Wedge, edit Size / Move / Turn / Color, Delete. Mirror on by default (the twin is a true mirror image on the other side). Pieces ride on the bones so they walk/run/punch with the mech and follow body-shape changes. Build is kept on the phone between visits (localStorage; real save/export is Phase 5). Tested at phone size: tapping, list, mirror, edits, reload, no errors.
 - Nov 22, 2026: heads were too small (11 to 14 heads tall). Head size now follows the body: Standard is 9 heads tall like Gundam-style mechs (about 9 to 9.5); Heavy and Brawler about 10 (small Jaeger-style heads), Scout 9.4, Squat 8 (chunky). The Head slider still scales it.
 - Nov 22, 2026 (voice): Phase 3 details decided, next moves picked, two movement styles (heavy / fast) added to Add-ons. Research notes: Gundams boost with main thrusters, turn with side thrusters (verniers) and by swinging their limbs as weights (AMBAC); Transformers fight like martial artists and keep wheels rolling while they transform.

@@ -1,0 +1,57 @@
+[
+ {
+  "id": "torso_cockpit",
+  "name": "Cockpit chest",
+  "about": "Real-robot chest: cockpit hatch, twin upper vents, tall collar.",
+  "size": [
+   1.057,
+   0.654,
+   0.88
+  ],
+  "faces": 218
+ },
+ {
+  "id": "torso_heavy",
+  "name": "Heavy chest",
+  "about": "Blocky siege chest: thick plates, rivet bars, low collar.",
+  "size": [
+   1.138,
+   0.735,
+   0.97
+  ],
+  "faces": 184
+ },
+ {
+  "id": "torso_sleek",
+  "name": "Sleek chest",
+  "about": "Tapered real-robot chest with intake vents and a collar.",
+  "size": [
+   1.102,
+   0.674,
+   1.02
+  ],
+  "faces": 206
+ },
+ {
+  "id": "torso_emblem",
+  "name": "Emblem chest",
+  "about": "Super-robot chest: big V plate, glowing emblem, flared pecs.",
+  "size": [
+   1.255,
+   0.744,
+   0.74
+  ],
+  "faces": 170
+ },
+ {
+  "id": "torso_grunt",
+  "name": "Grunt hatch chest",
+  "about": "Boxy grunt chest with a round cockpit hatch and grab rails.",
+  "size": [
+   0.9,
+   0.68,
+   0.63
+  ],
+  "faces": 96
+ }
+]
