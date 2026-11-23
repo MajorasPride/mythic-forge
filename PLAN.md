@@ -1,7 +1,7 @@
 # Mythic Forge (fresh start) — Plan & Rules
 
 ## Now
-Nov 23, 3am (he said 'do that and build it now'): LIVE: Hero + Walker part sets (19 new parts, 2 new starter mechs), Photo mode (item 8), bazooka rests on the shoulder (clean on 6 bodies). Earlier tonight paint went live. New chats: read HANDOFF.md first. Next: his feedback on the sets / photo mode / paint on the phone, then the other stance notes, then 7 More moves.
+Nov 23, 3am (he said 'do that and build it now'): LIVE: Hero + Walker part sets (21 parts, 18 of them new, 2 new starter mechs), Photo mode (item 8), bazooka rests on the shoulder (clean on 6 bodies). Earlier tonight paint went live. New chats: read HANDOFF.md first. Next: his feedback on the sets / photo mode / paint on the phone, then the other stance notes, then 7 More moves.
 Nov 22 late: items 1-6 + Part Maker are LIVE. Next: bazooka stance fix (bot must go clean), then the other stance notes (Relaxed shield closer, two sabers crossing), then 7 More moves.
 Mythic Forge rebuilt from the ground up (Nov 22, 2026). Phase 3 done and live (Nov 22): every spot has body parts (4 to 10 choices each), toon shading + outlines. Next: Phase 5 save/export: Body panel with 6 presets + 8 sliders reshaping the frame live, moves keep playing.
 Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
