@@ -20,6 +20,17 @@ Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
 4. First real parts: mech armor pieces built in Blender to fit the frame.
 5. Save and export: your mech downloads as a game file Titan Clash can use.
 
+## Build list he picked Nov 22 ("let's get to 9"), in order, each shown before push
+1. Backpack spot (7 from his kit) - built
+2. Paint schemes (his kit's colour sets) + My colours (Main / Second / Trim / Glow) - built. Later: bring over the OLD Mythic Forge paint (brushes, skins, ethereal paint, layers in materials.js) instead of rebuilding it.
+3. Starter mechs (his kit's 10 build sheets, each with a body preset + colours) - built
+4. Random mech button - built
+5. Weapons: energy swords, shields, missile pods, rifles (hands, shoulders, back)
+6. Details: vents, antennas, spikes, emblems stuck anywhere
+7. More moves: hit, block, jump + heavy landing, knockdown; fast style: boost dash, sidestep, rolling dodge
+8. Photo mode: pose, background, save a picture
+9. Sounds: stomps, servo whirs (Sound Lab idea)
+
 ## Add-ons (parking lot, reviewed at the end of each phase)
 - Details: extra loose shapes (vents, antennas, spikes) stuck on top of body parts, with size / move / turn / color. Built once on Nov 22 by mistake as 'armor', removed from the app; comes back later.
 - Recolor body parts (paint schemes).
@@ -43,6 +54,7 @@ build-together, pro-3d-workflow, game-art, ponytail, repo-scout. Model: Opus.
 - Keep this file correct; update Now and the Log every session.
 
 ## Log (newest first)
+- Nov 22, 2026: items 1-4 built: Backpack spot, Paint (11 kit schemes + My colours), Starter mechs (Vanguard, Bulwark, Titanheart, Ranger, Falcon, Paladin, Wraith, Mule, Patrol, Lionheart), Random. Parts now carry their material keys so they can be repainted. Tested at phone size: all starters, random, custom colour, backpack sits on the back, kept after reload, no errors. He reminded that old Mythic Forge has paint: logged to bring it over later. Waiting for his look before push.
 - Nov 22, 2026: he said moving the camera is hard. Camera now: smooth drag, can't go under the floor, 2 fingers zoom + slide, Front / Side / 3/4 / Back buttons, picking a spot glides in on it, closing Build glides back out, and the picture lifts above an open panel. Pushed with his OK.
 - Nov 22, 2026: still hard on his phone: added press-and-hold buttons (turn left/right, zoom in/out, look higher/lower) under the view buttons; no finger dragging needed. Then added Slide left/right and labels, in a 2-column grid.
 - Nov 22, 2026: he said Heavy looked weird (huge flat chest slab, tiny head). Heavy preset toned down (chest 1.1, shoulder 1.15, head 1.0, bulk 1.35; now 9 heads tall) in frame.js and mech_frame.py; body parts now keep their own shape (width/depth can only stretch 20% away from their height scale). Pushed with his OK.

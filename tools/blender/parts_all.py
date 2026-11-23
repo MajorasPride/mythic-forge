@@ -46,8 +46,8 @@ def _(F, A):
         A.box("accent", (x*HS, -.08*HS, -.37*HS), (.03*HS, .035*HS, .09*HS), (.2, .4), 0, rot=Matrix.Rotation(R(-35), 3, 'X'))
 
 SLOT = {"torso": "chest", "head": "head", "pelvis": "pelvis", "shoulder": "shoulder", "upperarm": "upper_arm",
-        "forearm": "forearm", "hand": "hand", "thigh": "thigh", "shin": "shin", "foot": "foot"}
-MODE = {"chest": "box", "head": "box", "pelvis": "box", "shoulder": "anchor", "foot": "anchor"}
+        "forearm": "forearm", "hand": "hand", "thigh": "thigh", "shin": "shin", "foot": "foot", "back": "back"}
+MODE = {"chest": "box", "head": "box", "pelvis": "box", "shoulder": "anchor", "foot": "anchor", "back": "anchor"}
 HAND_POSES = [("hand_kit", "fist", "Fist", "Model-kit hand closed into a fist."),
               ("hand_kit", "open", "Open hand", "Model-kit hand with open fingers."),
               ("hand_kit", "grip", "Grip hand", "Model-kit hand curled to hold a weapon."),
@@ -103,6 +103,15 @@ for pid, pose, name, about in jobs:
     if side: ob = build(pid, True, pose); place(ob, mode); e["glbR"] = glb(ob)              # mirrored copy for the right
     LIB.setdefault(slot, []).append(e)
 OUTJS = os.path.join(HERE, "..", "..", "models", "parts_all.js")
-open(OUTJS, "w").write("window.MF_PARTS = " + json.dumps(LIB) + ";\n")
+# paint schemes (colour per material key) and starter mechs (his kit's build sheets + a body preset each)
+SCHEMES = {k: v for k, v in NS["SCHEMES"].items()}
+BODY = {"Vanguard": "standard", "Bulwark": "heavy", "Titanheart": "brawler", "Ranger": "sleek", "Falcon": "scout",
+        "Paladin": "standard", "Wraith": "sleek", "Mule": "squat", "Patrol": "standard", "Lionheart": "brawler"}
+src2 = open(os.path.join(HERE, "mech_kit_R2.py")).read()
+sheets_src = src2[src2.index("SHEETS = {"):src2.index("POSE_HERO")]
+NS2 = {}; exec(sheets_src, NS2)
+STARTERS = [dict(name=n, preset=BODY[n], scheme=n.lower(), parts={SLOT[k]: v for k, v in sh.items()}) for n, sh in NS2["SHEETS"].items()]
+open(OUTJS, "w").write("window.MF_PARTS = " + json.dumps(LIB) + ";\nwindow.MF_SCHEMES = " + json.dumps(SCHEMES) +
+                       ";\nwindow.MF_STARTERS = " + json.dumps(STARTERS) + ";\n")
 print({k: [p["name"] for p in v] for k, v in LIB.items()})
 print("bytes", os.path.getsize(OUTJS))

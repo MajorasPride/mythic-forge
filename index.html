@@ -25,6 +25,8 @@
   select { font: inherit; font-size: 15px; min-height: 38px; border-radius: 8px; background: #2c2c30; color: #eee; border: 1px solid #4a4a4e; padding: 0 8px; }
   .sw { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 50%; }
   .hint { opacity: .65; margin: 0 0 10px; }
+  #customRow label { display: flex; align-items: center; gap: 4px; }
+  input[type=color] { width: 40px; height: 34px; border: 0; background: none; padding: 0; }
   #views { position: absolute; top: 40px; right: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
   #views button { min-height: 38px; min-width: 70px; font-size: 13px; padding: 0 8px; background: #2c2c30cc; touch-action: none; user-select: none; }
   #view canvas { touch-action: none; }
@@ -32,7 +34,7 @@
 </head>
 <body>
 <div id="view"></div>
-<div id="top"><span>Mythic Forge</span><small>Phase 3 · Body parts</small></div>
+<div id="top"><span>Mythic Forge</span><small>Build your mech</small></div>
 <div id="views">
   <button data-view="front">Front</button><button data-view="side">Side</button>
   <button data-view="angle">3/4</button><button data-view="back">Back</button>
@@ -43,6 +45,8 @@
 </div>
 <div id="body"><div id="presets"></div><div id="sliders"></div></div>
 <div id="build">
+  <div class="line"><select id="starterPick"></select><button id="randomBtn">🎲 Random</button><span>Paint:</span><select id="paintPick"></select></div>
+  <div class="line" id="customRow" style="display: none"></div>
   <p class="hint" id="buildHint">Tap a spot on the mech (or pick it here), then pick a body part for it.</p>
   <div class="line"><span>Spot:</span><select id="bonePick"></select><button id="mirrorBtn" class="on">Mirror</button></div>
   <div class="line" id="choices"></div>
@@ -161,7 +165,7 @@ new GLTFLoader().parse(bytes, '', gltf => {
   ORDER.filter(n => moves[n]).forEach(addMoveButton);
   fit();   // the button bar is taller now: keep panels above it
   const spotList = document.getElementById('bonePick');
-  spotList.innerHTML = '<option value="">Pick a spot...</option>' + Object.keys(bones).map(n => `<option value="${n}">${NICE(n)}${LIBRARY[SLOT_OF(n)] ? '' : ' (soon)'}</option>`).join('');
+  spotList.innerHTML = '<option value="">Pick a spot...</option>' + spots().map(n => `<option value="${n}">${NICE(n)}${LIBRARY[SLOT_OF(n)] ? '' : ' (soon)'}</option>`).join('');
   loadSaved();
   play('idle');
 });
@@ -227,58 +231,65 @@ syncSliders(); markPreset('standard');
 document.getElementById('bodyBtn').onclick = () => openPanel('body');
 
 
-// ---- 2d. BUILD: body parts. Every spot on the frame (chest, head, arms...) is a slot. Tap a spot, pick a body part.
+// ---- 2d. BUILD: body parts. Every spot on the mech (chest, head, arms, back...) is a slot. Tap a spot, pick a body part.
 //      A body part is stretched to fit its spot, so it follows the Body sliders and moves with the mech.
-//      Mirror ON = the same part on the other side too (for arms and legs, once they exist).
-const NICE = n => { const t = n.replace(/\.[LR]$/, '').replace('_', ' '); return n.endsWith('.L') ? 'Left ' + t : n.endsWith('.R') ? 'Right ' + t : t[0].toUpperCase() + t.slice(1); };
+//      Mirror ON = the same part on the other side too. Paint = a colour scheme for the whole mech.
+const NICE = n => { if (n === 'back') return 'Backpack'; const t = n.replace(/\.[LR]$/, '').replace('_', ' '); return n.endsWith('.L') ? 'Left ' + t : n.endsWith('.R') ? 'Right ' + t : t[0].toUpperCase() + t.slice(1); };
 const other = n => n.endsWith('.L') ? n.slice(0, -2) + '.R' : n.endsWith('.R') ? n.slice(0, -2) + '.L' : null;
 const SLOT_OF = n => n.replace(/\.[LR]$/, '');                 // 'forearm.L' -> 'forearm'
-const LIBRARY = window.MF_PARTS || {};                         // slot -> list of body parts
-const loaded = {};                                             // part id -> loaded 3D model
-let slots = {}, selBone = null, mirrorOn = true, building = false;
+const BONE_OF = n => n === 'back' ? 'chest' : n;               // the backpack rides on the chest bone
+const LIBRARY = window.MF_PARTS || {}, SCHEMES = window.MF_SCHEMES || {}, STARTERS = window.MF_STARTERS || [];
+const loaded = {};                                             // part id + side -> loaded 3D model
+const held = {};                                               // spot -> the part on it
+let slots = {}, selBone = null, mirrorOn = true, building = false, scheme = 'kit';
+const spots = () => [...Object.keys(bones), 'back'];
 
 function loadPart(p, right) {
   const key = p.id + (right ? 'R' : 'L');
   if (loaded[key]) return Promise.resolve(loaded[key]);
   const bytes = Uint8Array.from(atob(right && p.glbR ? p.glbR : p.glb), c => c.charCodeAt(0)).buffer;
   return new Promise(res => new GLTFLoader().parse(bytes, '', g => {
-    g.scene.traverse(m => { if (m.isMesh) { const glow = m.material.emissive && m.material.emissive.getHex() > 0;
-      m.material = toon(m.material.color.getHex(), glow); } });
+    g.scene.traverse(m => { if (m.isMesh) { const k = (m.material.name || '').split('.').pop();     // 'kit.armor' -> 'armor'
+      m.material = toon(m.material.color.getHex(), k === 'glow' || k === 'eye'); m.material.userData.key = k; } });
     loaded[key] = g.scene; res(g.scene);
   }));
 }
-async function setPart(boneName, id) {
-  const b = bones[boneName];
-  if (b.userData.part) b.remove(b.userData.part);
-  b.userData.part = null; b.userData.partId = id || null;
-  if (b.userData.block) b.userData.block.visible = !id;          // the gray stand-in shows only when the spot is empty
-  slots[boneName] = id || null;
+async function setPart(spot, id) {
+  const b = bones[BONE_OF(spot)];
+  if (held[spot]) { held[spot].parent.remove(held[spot]); delete held[spot]; }
+  if (spot !== 'back' && b.userData.block) b.userData.block.visible = !id;   // the gray stand-in shows only when the spot is empty
+  if (spot !== 'back') b.userData.partId = id || null;
+  slots[spot] = id || null;
   if (!id) return;
-  const p = LIBRARY[SLOT_OF(boneName)].find(q => q.id === id);
-  const model = (await loadPart(p, boneName.endsWith('.R'))).clone();
-  if (b.userData.partId !== id) return;                          // picked something else while loading
-  const holder = new THREE.Group(); holder.add(model); holder.userData.p = p;
-  b.add(holder); b.userData.part = holder; fitPart(boneName);
+  const p = (LIBRARY[SLOT_OF(spot)] || []).find(q => q.id === id); if (!p) return;
+  const model = (await loadPart(p, spot.endsWith('.R'))).clone();
+  if (slots[spot] !== id) return;                                // picked something else while loading
+  model.traverse(m => { if (m.isMesh) m.material = m.material.clone(); });   // own colours, so it can be painted
+  const holder = new THREE.Group(); holder.add(model); holder.userData = { p, spot };
+  b.add(holder); held[spot] = holder; fitPart(spot); paintPart(holder);
 }
 // Fit a part to its spot. Sizes from Blender are [width, depth, height]; three.js is y-up, so height -> y, depth -> z.
 //   box:    stands straight up on the joint, stretched to the spot's box (chest, head, pelvis)
 //   limb:   hangs from the joint along the bone, stretched to the bone's length and thickness
-//   anchor: keeps the kit's own joint point, scaled to the mech's size (shoulder pads, feet)
+//   anchor: keeps the kit's own joint point, scaled to the mech's size (shoulder pads, feet, backpack)
 const DOWN = new THREE.Vector3(0, -1, 0);
 // keep each part's own shape: height/length fits exactly, width and depth may only stretch 20% away from it
 const keep = (t, p, along) => Math.min(Math.max(t / p, along * .8), along * 1.2);
-function fitPart(boneName) {
-  const b = bones[boneName], h = b.userData.part; if (!h) return;
-  const p = h.userData.p, [pw, pd, ph] = p.size, [w, len, d] = b.userData.size, model = h.children[0];
+function fitPart(spot) {
+  const h = held[spot]; if (!h) return;
+  const b = bones[BONE_OF(spot)], p = h.userData.p, [pw, pd, ph] = p.size, [w, len, d] = b.userData.size, model = h.children[0];
   const toWorld = b.userData.restQ, toBone = toWorld.clone().invert(), k = params.height, bulk = params.bulk;
   h.position.set(0, 0, 0);
-  if (p.mode === 'box') { const sy = len / ph; h.quaternion.copy(toBone); model.scale.set(keep(w, pw, sy), sy, keep(d, pd, sy)); }
+  if (spot === 'back') {           // on the back of the chest, two thirds up
+    const S = len / 1.05; h.quaternion.copy(toBone); model.scale.setScalar(S);
+    h.position.copy(new THREE.Vector3(0, len * .62, -d * .5).applyQuaternion(toBone));
+  } else if (p.mode === 'box') { const sy = len / ph; h.quaternion.copy(toBone); model.scale.set(keep(w, pw, sy), sy, keep(d, pd, sy)); }
   else if (p.mode === 'limb') {
     const dir = b.userData.tip.clone().applyQuaternion(toWorld).normalize();
     h.quaternion.copy(toBone).multiply(new THREE.Quaternion().setFromUnitVectors(DOWN, dir));
     model.scale.set(w / pw, len / ph, d / pd);           // limbs: fill the bone (thickness is already set by the Thickness slider)
-  } else if (SLOT_OF(boneName) === 'shoulder') {
-    const S = 2.3 * k * Math.sqrt(bulk), out = boneName.endsWith('.R') ? -1 : 1;
+  } else if (SLOT_OF(spot) === 'shoulder') {
+    const S = 2.3 * k * Math.sqrt(bulk), out = spot.endsWith('.R') ? -1 : 1;
     h.quaternion.copy(toBone); model.scale.setScalar(S);
     // the kit's shoulder point sits a little inside and above the arm's top: put it there
     h.position.copy(b.userData.tip).add(new THREE.Vector3(-.18 * S * out, .10 * S, 0).applyQuaternion(toBone));
@@ -286,7 +297,18 @@ function fitPart(boneName) {
     h.quaternion.copy(toBone); model.scale.set(1.1 * bulk * k / pw * 1.4, .63 * k / .22, 1.7 * Math.sqrt(bulk) * k / pd * 1.1);
   }
 }
-function refreshParts() { for (const n of Object.keys(bones)) fitPart(n); }
+function refreshParts() { for (const s of Object.keys(held)) fitPart(s); }
+
+// paint: every part's pieces are tagged armor / armor2 / frame / joint / accent / accent2 / glow / eye
+function colours() { return scheme === 'custom' ? custom : SCHEMES[scheme] || SCHEMES.kit; }
+let custom = { ...(SCHEMES.kit || {}) };
+function paintPart(h) {
+  const c = colours();
+  h.traverse(m => { if (m.isMesh && c[m.material.userData.key]) { m.material.color.set('#' + c[m.material.userData.key].replace('#', ''));
+    if (m.material.emissiveIntensity) m.material.emissive.copy(m.material.color); } });
+}
+function paintAll() { Object.values(held).forEach(paintPart); }
+
 function pick(id) {
   if (!selBone) return hint('Tap a spot first');
   setPart(selBone, id);
@@ -296,14 +318,14 @@ function pick(id) {
 function selectBone(n) {
   if (n === selBone) return;
   selBone = n;
-  for (const [name, b] of Object.entries(bones)) if (b.userData.block) b.userData.block.material.color.set(name === n ? 0xd8823a : 0x8d8b85);
+  for (const [name, b] of Object.entries(bones)) if (b.userData.block) b.userData.block.material.color.set(name === BONE_OF(n || '') ? 0xd8823a : 0x8d8b85);
   document.getElementById('bonePick').value = n || '';
   showChoices();
   if (n) {   // zoom in on the picked spot, keeping the same viewing angle
-    const p = new THREE.Vector3(); bones[n].getWorldPosition(p);
-    const tip = bones[n].userData.tip.clone().applyQuaternion(bones[n].userData.restQ).multiplyScalar(.5); p.add(tip);
+    const bn = bones[BONE_OF(n)], p = new THREE.Vector3(); bn.getWorldPosition(p);
+    const tip = bn.userData.tip.clone().applyQuaternion(bn.userData.restQ).multiplyScalar(.5); p.add(tip);
     const dir = camera.position.clone().sub(controls.target).normalize();
-    glide(p, p.clone().addScaledVector(dir, Math.max(bones[n].userData.size[1] * 3.5, 7)));
+    glide(p, p.clone().addScaledVector(dir, Math.max(bn.userData.size[1] * 3.5, 7)));
   } else if (building === false) viewAll('angle');
 }
 function showChoices() {
@@ -314,12 +336,39 @@ function showChoices() {
   hint(NICE(selBone) + ': pick a body part.');
   const add = (label, id) => { const b = document.createElement('button'); b.textContent = label; b.classList.toggle('on', (slots[selBone] || null) === id);
     b.onclick = () => pick(id); box.append(b); };
-  add('Frame only', null);
+  add(selBone === 'back' ? 'None' : 'Frame only', null);
   list.forEach(p => add(p.name, p.id));
 }
 function hint(t) { document.getElementById('buildHint').textContent = t; }
 document.getElementById('mirrorBtn').onclick = e => { mirrorOn = !mirrorOn; e.target.classList.toggle('on', mirrorOn); };
 document.getElementById('bonePick').onchange = e => selectBone(e.target.value || null);
+
+// whole-mech helpers: starter mechs, random mech, paint
+const HAND = 'hand_kit_fist';
+async function applyBuild(preset, sch, parts) {
+  if (preset) { params = F.withPreset(preset); syncSliders(); markPreset(preset); shape(params); }
+  scheme = sch; document.getElementById('paintPick').value = sch;
+  const jobs = [];
+  for (const s of spots()) { const id = parts[SLOT_OF(s)]; if (id !== undefined) jobs.push(setPart(s, id)); }
+  await Promise.all(jobs); paintAll(); showChoices(); save();
+}
+function starter(i) { const st = STARTERS[i]; applyBuild(st.preset, st.scheme in SCHEMES ? st.scheme : 'kit', { hand: HAND, ...st.parts }); }
+function randomMech() {
+  const any = a => a[Math.floor(Math.random() * a.length)], parts = {};
+  for (const [slot, list] of Object.entries(LIBRARY)) parts[slot] = any(list).id;
+  applyBuild(any(Object.keys(F.PRESETS)), any(Object.keys(SCHEMES)), parts);
+}
+const NAME = k => k === 'kit' ? 'Model kit' : k[0].toUpperCase() + k.slice(1);
+document.getElementById('starterPick').innerHTML = '<option value="">Starter mechs...</option>' + STARTERS.map((st, i) => `<option value="${i}">${st.name}</option>`).join('');
+document.getElementById('starterPick').onchange = e => { if (e.target.value !== '') starter(+e.target.value); e.target.value = ''; };
+document.getElementById('randomBtn').onclick = randomMech;
+document.getElementById('paintPick').innerHTML = Object.keys(SCHEMES).map(k => `<option value="${k}">${NAME(k)}</option>`).join('') + '<option value="custom">My colours</option>';
+document.getElementById('paintPick').onchange = e => { scheme = e.target.value; document.getElementById('customRow').style.display = scheme === 'custom' ? 'flex' : 'none'; paintAll(); save(); };
+for (const [key, label] of [['armor', 'Main'], ['armor2', 'Second'], ['accent', 'Trim'], ['glow', 'Glow']]) {
+  const l = document.createElement('label'); l.innerHTML = `${label} <input type="color">`; const inp = l.querySelector('input');
+  inp.value = '#' + (custom[key] || '888888'); inp.oninput = () => { custom[key] = inp.value.slice(1); paintAll(); save(); };
+  document.getElementById('customRow').append(l);
+}
 
 // tap (not drag) on the mech picks the spot
 const ray = new THREE.Raycaster(), down = {};
@@ -329,8 +378,10 @@ renderer.domElement.addEventListener('pointerup', e => {
   ray.setFromCamera(new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
   const targets = []; for (const b of Object.values(bones)) b.traverse(o => { if (o.isMesh && o.visible) targets.push(o); });
   const hit = ray.intersectObjects(targets, false)[0];
-  let o = hit && hit.object; while (o && !(o.isBone)) o = o.parent;      // climb up to the bone that owns what was tapped
-  selectBone(o ? Object.keys(bones).find(n => bones[n] === o) : null);
+  let o = hit && hit.object, spot = null;
+  while (o && !o.isBone) { if (o.userData && o.userData.spot) { spot = o.userData.spot; break; } o = o.parent; }   // a part knows its spot
+  if (!spot && o) spot = Object.keys(bones).find(n => bones[n] === o);
+  selectBone(spot);
 });
 
 // panels: only one open at a time
@@ -346,12 +397,15 @@ function openPanel(which) {
 document.getElementById('buildBtn').onclick = () => openPanel('build');
 
 // keep your build on this phone between visits (proper save + export comes later)
-function save() { try { localStorage.setItem('mf-build2', JSON.stringify({ params, slots })); } catch (e) {} }
+function save() { try { localStorage.setItem('mf-build2', JSON.stringify({ params, slots, scheme, custom })); } catch (e) {} }
 function loadSaved() {
   let d; try { d = JSON.parse(localStorage.getItem('mf-build2')); } catch (e) {}
   if (!d) return;
   if (d.params) { params = { ...F.STANDARD, ...d.params }; syncSliders(); markPreset(null); shape(params); }
-  for (const [n, id] of Object.entries(d.slots || {})) if (id && bones[n]) setPart(n, id);
+  if (d.custom) custom = d.custom;
+  scheme = d.scheme || 'kit'; document.getElementById('paintPick').value = scheme;
+  document.getElementById('customRow').style.display = scheme === 'custom' ? 'flex' : 'none';
+  for (const [n, id] of Object.entries(d.slots || {})) if (id && (bones[n] || n === 'back')) setPart(n, id);
 }
 
 // ---- 3. moves
