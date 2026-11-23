@@ -1,7 +1,7 @@
 # Mythic Forge (fresh start) — Plan & Rules
 
 ## Now
-Nov 23 (after midnight): Paint port (item 2b) F1-F5 + round 2 + round 3 are on the TEST page only (test.html, live index untouched). He said his phone screen 'can't see everything' and 'run a bot': fixed the phone layout and added tools/bot/paint_bot.py (ALL OK). Waiting for his look on the phone before paint goes into index.html (see Questions at the bottom). Bazooka stance fix still waiting after it.
+Nov 23, 1:40am: PAINT IS LIVE in index.html (he said 'ok build'); test.html now just forwards to the live page. Paint bot ALL OK, weapon bot standard:0 25/25, shoulder bot standard 56/56 on the live page. New chats: read HANDOFF.md first. Next: his phone feedback on paint, then the bazooka stance fix, other stance notes, 7 More moves.
 Nov 22 late: items 1-6 + Part Maker are LIVE. Next: bazooka stance fix (bot must go clean), then the other stance notes (Relaxed shield closer, two sabers crossing), then 7 More moves.
 Mythic Forge rebuilt from the ground up (Nov 22, 2026). Phase 3 done and live (Nov 22): every spot has body parts (4 to 10 choices each), toon shading + outlines. Next: Phase 5 save/export: Body panel with 6 presets + 8 sliders reshaping the frame live, moves keep playing.
 Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
@@ -78,6 +78,7 @@ Paint port: build-together, ponytail, karpathy-guidelines, game-art.
 build-together, pro-3d-workflow, game-art, ponytail, repo-scout. Model: Opus.
 
 ## Rules
+- Before pushing paint or phone-layout changes, run the paint bot (python3 tools/bot/paint_bot.py index.html); it must say ALL OK.
 - Before pushing anything that moves or holds parts, run the weapon bot (tools/bot/weapon_bot.py); it must be 0 clips and 0 floating; shoulder_bot.py must be all OK.
 - Go through changes with him before pushing.
 - Rebuild the Part Maker shapes after changing them: python3 tools/blender/maker_shapes.py.
@@ -116,7 +117,7 @@ build-together, pro-3d-workflow, game-art, ponytail, repo-scout. Model: Opus.
 - three.js (MIT)
 
 ## Questions for him (answer when you can; nothing here blocks the next step)
-- P1 (Nov 23) Paint is only on the test page. After you try it on the phone: move it into the live Mythic Forge as is, or change things first?
+- P1 (Nov 23) ANSWERED: he said build it, paint went live Nov 23. Open part: what should change after you try it on the phone?
 - P2 (Nov 23) Phone layout on the test page: one scrolling button row at the bottom, and the move buttons hide while you paint. Keep that for the live page too? (Default: yes.)
 - P3 (Nov 23) Joint caps (elbows, knees) now take the colour scheme's joint colour instead of always dark gray. Keep? (Default: keep.)
 - P4 (Nov 23) Decals: which emblems do you want next? Examples: kill marks, squad logo, your own picture, glowing decals. (Default: wait for your picks.)

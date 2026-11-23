@@ -23,6 +23,17 @@
   #details { position: absolute; left: 0; right: 0; bottom: var(--bar, 68px); max-height: 60%; overflow-y: auto; padding: 12px 16px; background: #1c1c1ef2; display: none; font-size: 14px; }
   #details.open { display: block; }
   #details input[type=range] { flex: 1; }
+  #paint { position: absolute; left: 0; right: 0; bottom: var(--bar, 68px); max-height: 40%; overflow-y: auto; padding: 12px 16px; background: #1c1c1ef2; display: none; font-size: 14px; }
+  #paint.open { display: block; }
+  #paint [hidden] { display: none !important; }
+  #paint input[type=range] { flex: 1; min-width: 90px; }
+  #pSkins button { min-height: 36px; font-size: 13px; padding: 0 10px; }
+  #pRing { position: fixed; display: none; border: 2px solid #fff; box-shadow: 0 0 0 2px #0008; border-radius: 50%; pointer-events: none; z-index: 5; }
+  #pNums { position: fixed; inset: 0; pointer-events: none; z-index: 6; }
+  .plyr { display: inline-flex; align-items: center; gap: 4px; background: #2c2c30; border: 1px solid #4a4a4e; border-radius: 10px; padding: 3px 4px 3px 10px; }
+  .plyr button { min-height: 30px !important; padding: 0 8px !important; font-size: 12px; }
+  #pSwatches .sw { width: 32px; height: 32px; min-height: 32px; border: 2px solid #777; }
+  .pnum { position: absolute; pointer-events: auto; width: 30px; height: 30px; min-height: 30px; padding: 0; border-radius: 50%; font-size: 13px; background: #ffc040; color: #111; border: 2px solid #111; }
   .line { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
   .line button { min-height: 38px; font-size: 14px; padding: 0 12px; }
   select { font: inherit; font-size: 15px; min-height: 38px; border-radius: 8px; background: #2c2c30; color: #eee; border: 1px solid #4a4a4e; padding: 0 8px; }
@@ -37,6 +48,21 @@
   #maker.open { display: block; }
   #maker .mk-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 17px; }
   #mkCv { width: 100%; max-width: 560px; display: block; margin: 0 auto 10px; border-radius: 10px; touch-action: none; user-select: none; -webkit-user-select: none; }
+  /* phone (paint test, Nov 23: "my screen can't see everything"): one scrolling button bar, smaller view buttons, a short paint panel */
+  @media (max-width: 600px) {
+    #bar { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; padding: 8px; gap: 6px; }
+    #bar button { flex: none; min-height: 40px; padding: 0 12px; font-size: 15px; }
+    #views { top: 34px; right: 4px; gap: 3px; }
+    #views button { min-width: 50px; min-height: 30px; font-size: 11px; padding: 0 4px; }
+    #paint { max-height: 36%; padding: 8px 10px; }
+    #paint .line { flex-wrap: nowrap; overflow-x: auto; margin-bottom: 6px; padding-bottom: 2px; }
+    #paint .line > * { flex: none; }
+    #paint .line button { min-height: 38px; padding: 0 10px; }
+    #paint input[type=range] { width: 110px; flex: none; }
+    #paint .hint { font-size: 12px; margin-bottom: 6px; }
+    #pSkins { flex-wrap: wrap !important; }
+  }
+  body.painting #moves, body.painting #bones { display: none !important; }
   #mkName { font: inherit; font-size: 15px; min-height: 38px; border-radius: 8px; background: #2c2c30; color: #eee; border: 1px solid #4a4a4e; padding: 0 10px; flex: 1; min-width: 140px; }
 </style>
 </head>
@@ -53,8 +79,7 @@
 </div>
 <div id="body"><div id="presets"></div><div id="sliders"></div></div>
 <div id="build">
-  <div class="line"><select id="starterPick"></select><button id="randomBtn">🎲 Random</button><span>Paint:</span><select id="paintPick"></select></div>
-  <div class="line" id="customRow" style="display: none"></div>
+  <div class="line"><select id="starterPick"></select><button id="randomBtn">🎲 Random</button></div>
   <p class="hint" id="buildHint">Tap a spot on the mech (or pick it here), then pick a body part for it.</p>
   <div class="line"><span>Spot:</span><select id="bonePick"></select><button id="mirrorBtn" class="on">Mirror</button></div>
   <div class="line" id="weaponRow"><span>Weapons:</span><button data-spot="weapon.R">Right hand</button><button data-spot="weapon.L">Left hand</button><button data-spot="mount.L">Shoulders</button></div>
@@ -72,11 +97,16 @@
   </div>
   <div class="line"><button id="detClear">Clear all details</button></div>
 </div>
+<div id="paint">
+  <div class="line"><span>Colours:</span><select id="paintPick"></select></div>
+  <div class="line" id="customRow" style="display: none"></div>
+</div>
 <div id="bar">
   <span id="moves" style="display: contents"></span>
   <button id="bodyBtn">Body</button>
   <button id="buildBtn">Build</button>
   <button id="detailsBtn">Details</button>
+  <button id="paintBtn">Paint</button>
   <button id="makeBtn">Make</button>
   <button id="bones" class="on">Bones</button>
 </div>
@@ -94,6 +124,10 @@
 <!-- Part Maker: sketch your own body parts from shapes (maker.js); the shapes are beveled in Blender (tools/blender/maker_shapes.py) -->
 <script src="models/maker_shapes.js"></script>
 <script src="maker.js"></script>
+<!-- paint, brought over from the old Mythic Forge: skins (materials.js, bark photos from Lynocs CC0 in textures-bark.js) + brushes (paint.js) -->
+<script src="textures-bark.js"></script>
+<script src="materials.js"></script>
+<script src="paint.js"></script>
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
@@ -103,6 +137,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';   // sticks decals (numbers, stripes, emblems) onto a surface (three.js, MIT)
+import { TessellateModifier } from 'three/addons/modifiers/TessellateModifier.js';   // splits a part finer so brush paint looks smooth (three.js, MIT)
 import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';   // black toon outlines (three.js, MIT)
 
 // ---- 1. the stage: renderer, camera, light, floor
@@ -123,10 +159,17 @@ controls.update();
 let camTo = null;
 function glide(target, pos) { camTo = { target: target.clone(), pos: pos.clone() }; }
 let mechTop = 10;
+// how far back the camera sits so the whole mech fits: a tall, narrow phone screen needs more room (Nov 23 fix: on his phone the mech was cut off),
+// and an open panel at the bottom leaves less screen for the mech
+function fitDist(top) {
+  const a = innerWidth / innerHeight, panel = document.querySelector('#body.open, #build.open, #details.open, #paint.open');
+  const free = panel ? Math.max(.4, 1 - panel.offsetHeight / innerHeight) : 1;
+  return Math.max(top * 2.3, 14) * Math.max(1, .5 / a) / Math.sqrt(free);
+}
 function viewAll(dirName) {
   const D = { front: [0, .15, 1], side: [1, .15, 0], angle: [.75, .3, .9], back: [0, .15, -1] }[dirName] || [.75, .3, .9];
   const t = new THREE.Vector3(0, mechTop * .5, 0), dir = new THREE.Vector3(...D).normalize();
-  glide(t, t.clone().addScaledVector(dir, Math.max(mechTop * 2.3, 14)));
+  glide(t, t.clone().addScaledVector(dir, fitDist(mechTop)));
 }
 document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => viewAll(b.dataset.view));
 // press-and-hold buttons for phones (no fiddly finger dragging): turn, zoom, look higher/lower
@@ -149,7 +192,7 @@ document.querySelectorAll('[data-hold]').forEach(b => {
   for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) b.addEventListener(ev, () => { holding = null; b.classList.remove('on'); });
 });
 scene.background = new THREE.Color(0x17181c);
-scene.add(new THREE.HemisphereLight(0xdfe6ff, 0x30302c, 1.6));
+const hemi = new THREE.HemisphereLight(0xdfe6ff, 0x30302c, 1.6); scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xffffff, 2.4); sun.position.set(6, 12, 8); scene.add(sun);
 const rim = new THREE.DirectionalLight(0x8fb4ff, 1.6); rim.position.set(-8, 6, -10); scene.add(rim);   // rim light: makes the silhouette pop
 // toon look: 3 flat bands of light instead of smooth shading, plus black outlines
@@ -231,12 +274,14 @@ function shape(p, isStandard = false) {
     box.position.copy(tip).multiplyScalar(.5);
     box.material = name === 'waist' ? CAP : blockMat.clone(); box.userData.bone = name;   // waist reads as dark frame, not a gray brick      // each block knows its bone (for tapping)
     box.visible = !bone.userData.partId;
-    bone.add(box); bone.userData.block = box;
+    box.userData.paintSpot = 'frame:' + name; box.userData.paintId = 'block'; box.userData.block = name !== 'waist';   // frame pieces take paint too
+    bone.add(box); bone.userData.block = box; if (window.MF_PAINT && MF_PAINT.ready) MF_PAINT.dress(box);
     // joint caps (Nov 22, step 1 'bold silhouette'): a dark ball at each limb joint so there are no see-through gaps
     if (bone.userData.cap) bone.remove(bone.userData.cap);
     if (/^(forearm|shin)\./.test(name)) {   // small caps at elbow and knee only
       const cap = new THREE.Mesh(new THREE.SphereGeometry(Math.min(w, dep) * .42, 12, 8), CAP); cap.userData.key = 'joint';
-      bone.add(cap); bone.userData.cap = cap;
+      cap.userData.paintSpot = 'cap:' + name; cap.userData.paintId = 'cap';
+      bone.add(cap); bone.userData.cap = cap; if (window.MF_PAINT && MF_PAINT.ready) MF_PAINT.dress(cap);
     }
     bone.userData.size = [w, tip.length(), dep]; bone.userData.tip = tip;
     bone.userData.restWorld = new THREE.Matrix4().compose(head, bone.userData.restQ, new THREE.Vector3(1, 1, 1));
@@ -245,7 +290,7 @@ function shape(p, isStandard = false) {
   const top = f.head.tail[2], dir = camera.position.clone().sub(controls.target).normalize();
   if (typeof refreshParts === 'function') refreshParts();   // body parts stretch to the new shape
   controls.target.set(0, top * .5, 0);
-  camera.position.copy(controls.target).addScaledVector(dir, Math.max(top * 2.3, 14));
+  camera.position.copy(controls.target).addScaledVector(dir, fitDist(top));
   controls.update();
 }
 // moves were made on the Standard frame: keep each joint's move, but at its new spot
@@ -525,11 +570,7 @@ function refreshParts() { for (const s of Object.keys(held)) fitPart(s); }
 // paint: every part's pieces are tagged armor / armor2 / frame / joint / accent / accent2 / glow / eye
 function colours() { return scheme === 'custom' ? custom : SCHEMES[scheme] || SCHEMES.kit; }
 let custom = { ...(SCHEMES.kit || {}) };
-function paintPart(h) {
-  const c = colours();
-  h.traverse(m => { if (m.isMesh && c[m.material.userData.key]) { m.material.color.set('#' + c[m.material.userData.key].replace('#', ''));
-    if (m.material.emissiveIntensity) m.material.emissive.copy(m.material.color); } });
-}
+function paintPart(h) { MF_PAINT.dress(h); }   // scheme colours, skins and brushed paint (paint.js)
 function paintAll() { Object.values(held).forEach(paintPart); detailBits.forEach(paintPart); }
 
 function pick(id) {
@@ -541,7 +582,7 @@ function pick(id) {
 function selectBone(n) {
   if (n === selBone) return;
   selBone = n;
-  for (const [name, b] of Object.entries(bones)) if (b.userData.block) b.userData.block.material.color.set(name === BONE_OF(n || '') ? 0xd8823a : 0x8d8b85);
+  for (const [name, b] of Object.entries(bones)) if (b.userData.block && !b.userData.block.material.userData.skin) b.userData.block.material.color.set(name === BONE_OF(n || '') ? 0xd8823a : 0x8d8b85);
   document.getElementById('bonePick').value = n || '';
   document.querySelectorAll('#weaponRow [data-spot]').forEach(b => b.classList.toggle('on', b.dataset.spot === n || (b.dataset.spot === 'mount.L' && n === 'mount.R')));
   showChoices();
@@ -604,6 +645,8 @@ for (const [key, label] of [['armor', 'Main'], ['armor2', 'Second'], ['accent', 
   inp.value = '#' + (custom[key] || '888888'); inp.oninput = () => { custom[key] = inp.value.slice(1); paintAll(); save(); };
   document.getElementById('customRow').append(l);
 }
+MF_PAINT.init({ THREE, toon, scene, camera, renderer, controls, held, colours: () => colours(), paintAll: () => paintAll(), Tessellate: TessellateModifier, Decal: DecalGeometry, lights: { hemi, sun, rim },
+  extras: () => [...detailBits, ...Object.values(bones).flatMap(b => [b.userData.block, b.userData.cap]).filter(Boolean)] });
 
 // tap (not drag) on the mech picks the spot
 const ray = new THREE.Raycaster(), down = {};
@@ -622,7 +665,7 @@ renderer.domElement.addEventListener('pointerup', e => {
 
 // panels: only one open at a time
 function openPanel(which) {
-  for (const id of ['body', 'build', 'details']) {
+  for (const id of ['body', 'build', 'details', 'paint']) {
     const open = id === which && !document.getElementById(id).classList.contains('open');
     document.getElementById(id).classList.toggle('open', open);
     document.getElementById(id + 'Btn').classList.toggle('on', open);
@@ -631,7 +674,10 @@ function openPanel(which) {
   detailing = document.getElementById('details').classList.contains('open');
   if (!building) selectBone(null);
   if (!detailing) { placing = null; selectDetail(null); showDetailChoices(); }
+  MF_PAINT.setOpen(document.getElementById('paint').classList.contains('open'));
+  if (innerWidth < 600 && which) setTimeout(() => viewAll('angle'), 60);   // phone: step back so the whole mech fits above the panel
 }
+document.getElementById('paintBtn').onclick = () => openPanel('paint');
 document.getElementById('buildBtn').onclick = () => openPanel('build');
 const MAKER_SPOT = { head: 'head', chest: 'chest', pelvis: 'pelvis', back: 'back' };
 document.getElementById('makeBtn').onclick = () => MF_MAKER.open(selBone && LIBRARY[SLOT_OF(selBone)] && MF_MAKER.SLOTS[SLOT_OF(selBone)] ? SLOT_OF(selBone) : undefined);
@@ -692,7 +738,7 @@ function detailTap(ray) {
 }
 async function buildDetails() {
   for (const h of detailBits.splice(0)) h.parent && h.parent.remove(h);
-  const k = params.height, S = 2.3 * k * Math.sqrt(params.bulk);
+  const k = params.height, S = 2.3 * k * Math.sqrt(params.bulk); let newUid = false;
   for (const [i, d] of details.entries()) {
     const lib = DETAILS.find(x => x.id === d.id); if (!lib || !bones[d.bone]) continue;
     const model = await loadPart(lib, false);
@@ -704,11 +750,13 @@ async function buildDetails() {
       h.position.fromArray(p);
       h.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3().fromArray(n).normalize())
         .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), d.turn * Math.PI / 180 * (bn === d.bone ? 1 : -1)));
-      h.add(m); h.userData.det = i; h.userData.p = lib;
+      if (!d.uid) { d.uid = Math.random().toString(36).slice(2, 8); newUid = true; }
+      h.add(m); h.userData.det = i; h.userData.p = lib; h.userData.paintSpot = 'det:' + d.uid + (bn === d.bone ? '' : 'm'); h.userData.paintId = lib.id;
       bones[bn].add(h); detailBits.push(h); paintPart(h);
       if (i === selDet) mark(h, true);
     }
   }
+  if (newUid) save();
 }
 function mark(h, on) { h.traverse(m => { if (m.isMesh) m.material.emissive && m.material.emissive.setHex(on ? 0x553311 : 0); }); }
 function selectDetail(i) {
@@ -859,7 +907,7 @@ const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
   if (mixer) {
     for (const b of Object.values(bones)) if (b.userData.stdPos) b.position.copy(b.userData.stdPos);   // start from Standard
-    mixer.update(clock.getDelta());   // play the move
+    const dt = clock.getDelta(); mixer.update(MF_PAINT.frozen ? 0 : dt);   // play the move (holds still while a paint brush is on)
     keepShape();                      // then shift every joint to this mech's shape
     aimWrists();                      // and turn wrists so held weapons never point back into the body
   }
@@ -870,7 +918,8 @@ renderer.setAnimationLoop(() => {
   }
   controls.update();
   // when a panel is open, shift the picture up so the mech isn't hidden behind it
-  const panel = document.querySelector('#body.open, #build.open, #details.open'), lift = panel ? panel.offsetHeight / 2 : 0;
+  MF_PAINT.frame(clock.elapsedTime);
+  const panel = document.querySelector('#body.open, #build.open, #details.open, #paint.open'), lift = panel ? panel.offsetHeight / 2 : 0;
   if (lift) camera.setViewOffset(innerWidth, innerHeight, 0, lift, innerWidth, innerHeight); else camera.clearViewOffset();
   outline.render(scene, camera);
 });
