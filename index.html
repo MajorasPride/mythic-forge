@@ -25,15 +25,22 @@
   select { font: inherit; font-size: 15px; min-height: 38px; border-radius: 8px; background: #2c2c30; color: #eee; border: 1px solid #4a4a4e; padding: 0 8px; }
   .sw { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 50%; }
   .hint { opacity: .65; margin: 0 0 10px; }
-  #views { position: absolute; top: 40px; right: 8px; display: flex; flex-direction: column; gap: 6px; }
-  #views button { min-height: 40px; min-width: 64px; font-size: 14px; padding: 0 10px; background: #2c2c30cc; touch-action: none; user-select: none; }
+  #views { position: absolute; top: 40px; right: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  #views button { min-height: 38px; min-width: 70px; font-size: 13px; padding: 0 8px; background: #2c2c30cc; touch-action: none; user-select: none; }
   #view canvas { touch-action: none; }
 </style>
 </head>
 <body>
 <div id="view"></div>
 <div id="top"><span>Mythic Forge</span><small>Phase 3 · Body parts</small></div>
-<div id="views"><button data-view="front">Front</button><button data-view="side">Side</button><button data-view="angle">3/4</button><button data-view="back">Back</button><button data-hold="left" aria-label="Turn left">⟲</button><button data-hold="right" aria-label="Turn right">⟳</button><button data-hold="in" aria-label="Zoom in">＋</button><button data-hold="out" aria-label="Zoom out">－</button><button data-hold="up" aria-label="Look from higher">▲</button><button data-hold="down" aria-label="Look from lower">▼</button></div>
+<div id="views">
+  <button data-view="front">Front</button><button data-view="side">Side</button>
+  <button data-view="angle">3/4</button><button data-view="back">Back</button>
+  <button data-hold="left">⟲ Turn</button><button data-hold="right">Turn ⟳</button>
+  <button data-hold="panL">◀ Slide</button><button data-hold="panR">Slide ▶</button>
+  <button data-hold="up">▲ Up</button><button data-hold="down">▼ Down</button>
+  <button data-hold="in">＋ Zoom</button><button data-hold="out">－ Zoom</button>
+</div>
 <div id="body"><div id="presets"></div><div id="sliders"></div></div>
 <div id="build">
   <p class="hint" id="buildHint">Tap a spot on the mech (or pick it here), then pick a body part for it.</p>
@@ -95,6 +102,10 @@ function nudge(dt) {
   const off = camera.position.clone().sub(controls.target), sph = new THREE.Spherical().setFromVector3(off), sp = 1.6 * dt;
   if (holding === 'left') sph.theta -= sp; if (holding === 'right') sph.theta += sp;
   if (holding === 'up') sph.phi = Math.max(.15, sph.phi - sp * .7); if (holding === 'down') sph.phi = Math.min(Math.PI * .49, sph.phi + sp * .7);
+  if (holding === 'panL' || holding === 'panR') {   // slide the view sideways (relative to where the camera looks)
+    const side = new THREE.Vector3().crossVectors(off, camera.up).normalize().multiplyScalar((holding === 'panL' ? 1 : -1) * sph.radius * .6 * dt);
+    controls.target.add(side); camera.position.add(side); return;
+  }
   if (holding === 'in') sph.radius = Math.max(controls.minDistance, sph.radius * (1 - dt * 1.2));
   if (holding === 'out') sph.radius = Math.min(controls.maxDistance, sph.radius * (1 + dt * 1.2));
   camera.position.copy(controls.target).add(new THREE.Vector3().setFromSpherical(sph));
