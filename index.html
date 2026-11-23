@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Mythic Forge</title>
 <style>
   html, body { margin: 0; height: 100%; background: #1c1c1e; color: #e8e8e8; font-family: system-ui, sans-serif; overflow: hidden; }
-  #view { position: absolute; inset: 0; }
+  #view { position: absolute; inset: 0; overflow: hidden; }
+  #view canvas { display: block; max-width: 100vw; }
   #top { position: absolute; top: 0; left: 0; right: 0; padding: 10px 14px; font-size: 15px; display: flex; justify-content: space-between; pointer-events: none; }
   #top small { opacity: .6; }
   #bar { position: absolute; left: 0; right: 0; bottom: 0; padding: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; background: #1c1c1ecc; }
@@ -49,18 +50,34 @@
   #maker .mk-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 17px; }
   #mkCv { width: 100%; max-width: 560px; display: block; margin: 0 auto 10px; border-radius: 10px; touch-action: none; user-select: none; -webkit-user-select: none; }
   /* phone (paint test, Nov 23: "my screen can't see everything"): one scrolling button bar, smaller view buttons, a short paint panel */
+  /* PHONE (Nov 23: "make it work for phone, gonna be using phone mostly"): tools in one row, moves in a second row, short panels whose rows
+     swipe sideways, part choices in one swipe row, view buttons folded behind a camera button, room left for the phone's gesture bar */
+  #viewsBtn { display: none; position: absolute; top: 6px; right: 6px; min-height: 38px; min-width: 44px; padding: 0 10px; font-size: 17px; background: #2c2c30cc; z-index: 3; }
+  button, select, input { touch-action: manipulation; }
   @media (max-width: 600px) {
-    #bar { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; padding: 8px; gap: 6px; }
-    #bar button { flex: none; min-height: 40px; padding: 0 12px; font-size: 15px; }
-    #views { top: 34px; right: 4px; gap: 3px; }
-    #views button { min-width: 50px; min-height: 30px; font-size: 11px; padding: 0 4px; }
+    #top small { display: none; } #top { padding: 12px 12px; font-size: 14px; }
+    #bar { flex-wrap: wrap; justify-content: center; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); gap: 4px; }
+    #bar button { flex: 1 1 auto; min-width: 0; min-height: 42px; padding: 0 6px; font-size: 14px; order: 1; }
+    #bar::after { content: ''; order: 2; flex-basis: 100%; height: 0; }
+    #moves button, #bar #bones { order: 3; min-height: 38px; }
+    #viewsBtn { display: block; }
+    #views { top: 50px; right: 6px; gap: 3px; display: none; }
+    body.views-open #views { display: grid; }
+    #views button { min-width: 56px; min-height: 36px; font-size: 12px; padding: 0 4px; }
+    #body, #build, #details { max-height: 44%; padding: 8px 10px; }
     #paint { max-height: 36%; padding: 8px 10px; }
-    #paint .line { flex-wrap: nowrap; overflow-x: auto; margin-bottom: 6px; padding-bottom: 2px; }
-    #paint .line > * { flex: none; }
-    #paint .line button { min-height: 38px; padding: 0 10px; }
+    #paint .line, #build .line, #details .line { flex-wrap: nowrap; overflow-x: auto; margin-bottom: 6px; padding-bottom: 2px; }
+    #paint .line > *, #build .line > *, #details .line > * { flex: none; }
+    #paint .line button, #build .line button, #details .line button { min-height: 40px; padding: 0 10px; }
     #paint input[type=range] { width: 110px; flex: none; }
-    #paint .hint { font-size: 12px; margin-bottom: 6px; }
+    #details input[type=range] { width: 180px; flex: none; }
+    #paint .hint, #build .hint, #details .hint { font-size: 12px; margin-bottom: 6px; }
     #pSkins { flex-wrap: wrap !important; }
+    #presets { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; } #presets button { flex: none; min-height: 40px; }
+    .row { grid-template-columns: 108px 1fr 36px; min-height: 36px; gap: 8px; }
+    #photoBar { padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
+    #photoBar .line button, #photoBar select { min-height: 40px; }
+    #maker { padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
   }
   body.painting #moves, body.painting #bones { display: none !important; }
   #photoBar { position: absolute; left: 0; right: 0; bottom: 0; padding: 8px 10px; background: #1c1c1ef2; display: none; font-size: 14px; z-index: 4; }
@@ -75,6 +92,7 @@
 <body>
 <div id="view"></div>
 <div id="top"><span>Mythic Forge</span><small>Build your mech</small></div>
+<button id="viewsBtn" title="Camera buttons">🎥</button>
 <div id="views">
   <button data-view="front">Front</button><button data-view="side">Side</button>
   <button data-view="angle">3/4</button><button data-view="back">Back</button>
@@ -153,7 +171,8 @@ import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';   // blac
 
 // ---- 1. the stage: renderer, camera, light, floor
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(devicePixelRatio);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);   // size the canvas to the screen BEFORE it goes on the page: left at its default it is wider than a phone, and the phone then lays the whole app out as a wide, zoomed-out desktop page (found Nov 23)   // phones report 3-4: drawing that many pixels (twice, for the outlines) is slow and looks the same
 document.getElementById('view').append(renderer.domElement);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 200);
@@ -169,12 +188,17 @@ controls.update();
 let camTo = null;
 function glide(target, pos) { camTo = { target: target.clone(), pos: pos.clone() }; }
 let mechTop = 10;
-// how far back the camera sits so the whole mech fits: a tall, narrow phone screen needs more room (Nov 23 fix: on his phone the mech was cut off),
-// and an open panel at the bottom leaves less screen for the mech
+// how much of the bottom of the screen is covered by the button bar and any open panel
+function coverPx() {
+  let top = innerHeight;
+  for (const el of document.querySelectorAll('#bar, #body.open, #build.open, #details.open, #paint.open, body.photo #photoBar')) if (el.offsetParent !== null) top = Math.min(top, el.getBoundingClientRect().top);
+  return Math.max(0, innerHeight - top);
+}
+// how far back the camera sits so the whole mech fits in the free part of the screen, on a wide monitor or a tall narrow phone
+// (Nov 23: on his phone the mech was cut off or hidden behind the panel)
 function fitDist(top) {
-  const a = innerWidth / innerHeight, panel = document.querySelector('#body.open, #build.open, #details.open, #paint.open');
-  const free = panel ? Math.max(.4, 1 - panel.offsetHeight / innerHeight) : 1;
-  return Math.max(top * 2.3, 14) * Math.max(1, .5 / a) / Math.sqrt(free);
+  const t = Math.tan(camera.fov * Math.PI / 360), a = innerWidth / innerHeight, free = Math.max(.3, 1 - coverPx() / innerHeight);
+  return Math.max(top * 1.1 / (2 * t * free * .66), top * .82 / (2 * t * a * .9), 14);
 }
 function viewAll(dirName) {
   const D = { front: [0, .15, 1], side: [1, .15, 0], angle: [.75, .3, .9], back: [0, .15, -1] }[dirName] || [.75, .3, .9];
@@ -182,6 +206,7 @@ function viewAll(dirName) {
   glide(t, t.clone().addScaledVector(dir, fitDist(mechTop)));
 }
 document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => viewAll(b.dataset.view));
+document.getElementById('viewsBtn').onclick = e => e.target.classList.toggle('on', document.body.classList.toggle('views-open'));   // phone: camera buttons fold away
 // press-and-hold buttons for phones (no fiddly finger dragging): turn, zoom, look higher/lower
 let holding = null;
 function nudge(dt) {
@@ -259,7 +284,7 @@ new GLTFLoader().parse(bytes, '', gltf => {
   shape(params);
   ORDER.filter(n => moves[n]).forEach(addMoveButton);
   window.__cam = camera; window.__ctl = controls;
-  window.__mf = { setBody: p => { params = { ...F.STANDARD, ...p }; shape(params); refreshParts(); }, setStance: m => { stanceMode = m; }, mixer, moves, keepShape: () => { keepShape(); aimWrists(); }, held, renderer, mech, setPart: (...a) => setPart(...a), pokes, surfaceHit, padCentre, applyBuild: (...a) => applyBuild(...a) };   // for the test bot
+  window.__mf = { camBusy: () => !!camTo, setBody: p => { params = { ...F.STANDARD, ...p }; shape(params); refreshParts(); }, setStance: m => { stanceMode = m; }, mixer, moves, keepShape: () => { keepShape(); aimWrists(); }, held, renderer, mech, setPart: (...a) => setPart(...a), pokes, surfaceHit, padCentre, applyBuild: (...a) => applyBuild(...a) };   // for the test bot
   fit();   // the button bar is taller now: keep panels above it
   const spotList = document.getElementById('bonePick');
   spotList.innerHTML = '<option value="">Pick a spot...</option>' + spots().map(n => `<option value="${n}">${NICE(n)}${LIBRARY[SLOT_OF(n)] ? '' : ' (soon)'}</option>`).join('');
@@ -608,7 +633,7 @@ function selectBone(n) {
     const bn = bones[BONE_OF(n)], p = new THREE.Vector3(); bn.getWorldPosition(p);
     const tip = bn.userData.tip.clone().applyQuaternion(bn.userData.restQ).multiplyScalar(.5); p.add(tip);
     const dir = camera.position.clone().sub(controls.target).normalize();
-    glide(p, p.clone().addScaledVector(dir, Math.max(bn.userData.size[1] * 3.5, 7)));
+    glide(p, p.clone().addScaledVector(dir, Math.max(bn.userData.size[1] * 3.5, 7) * fitDist(10) / 23));   // same zoom, backed off on a narrow screen or above an open panel
   } else if (building === false) viewAll('angle');
 }
 function showChoices() {
@@ -621,6 +646,7 @@ function showChoices() {
     b.onclick = () => pick(id); box.append(b); };
   add(isExtra(selBone) ? 'None' : 'Frame only', null);
   list.forEach(p => add(p.name, p.id));
+  const cur = box.querySelector('.on'); if (cur && innerWidth < 600) cur.scrollIntoView({ block: 'nearest', inline: 'center' });
 }
 function hint(t) { document.getElementById('buildHint').textContent = t; }
 document.getElementById('mirrorBtn').onclick = e => { mirrorOn = !mirrorOn; e.target.classList.toggle('on', mirrorOn); };
@@ -668,9 +694,9 @@ MF_PAINT.init({ THREE, toon, scene, camera, renderer, controls, held, colours: (
 
 // tap (not drag) on the mech picks the spot
 const ray = new THREE.Raycaster(), down = {};
-renderer.domElement.addEventListener('pointerdown', e => { down.x = e.clientX; down.y = e.clientY; down.t = performance.now(); });
+renderer.domElement.addEventListener('pointerdown', e => { down.x = e.clientX; down.y = e.clientY; down.t = e.timeStamp; });
 renderer.domElement.addEventListener('pointerup', e => {
-  if (!(building || detailing) || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8 || performance.now() - down.t > 400) return;
+  if (!(building || detailing) || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 10 || e.timeStamp - down.t > 500) return;   // a tap, timed by the event's own clock
   if (detailing) { ray.setFromCamera(new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera); return detailTap(ray); }
   ray.setFromCamera(new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
   const targets = []; for (const b of Object.values(bones)) b.traverse(o => { if (o.isMesh && o.visible) targets.push(o); });
@@ -973,7 +999,7 @@ renderer.setAnimationLoop(() => {
   controls.update();
   // when a panel is open, shift the picture up so the mech isn't hidden behind it
   MF_PAINT.frame(clock.elapsedTime);
-  const panel = document.querySelector('#body.open, #build.open, #details.open, #paint.open, body.photo #photoBar'), lift = panel ? panel.offsetHeight / 2 : 0;
+  const panel = document.querySelector('#body.open, #build.open, #details.open, #paint.open, body.photo #photoBar'), lift = coverPx() / 2;
   if (lift) camera.setViewOffset(innerWidth, innerHeight, 0, lift, innerWidth, innerHeight); else camera.clearViewOffset();
   outline.render(scene, camera);
 });

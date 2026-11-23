@@ -51,7 +51,7 @@
     const [d, far, fov] = ANGLES[kind], top = C.mechTop(), dir = new T.Vector3(...d).normalize();
     const target = new T.Vector3(0, top * (kind === 'face' ? .9 : kind === 'hero' ? .55 : .5), 0);
     setFov(fov); $('phLens').value = fov;
-    C.glide(target, target.clone().addScaledVector(dir, C.fitDist(top) * far * (40 / fov) * (kind === 'face' ? 1 : .92)));
+    C.glide(target, target.clone().addScaledVector(dir, C.fitDist(top) * far * (kind === 'face' ? 1 : .92)));   // fitDist already allows for the lens
   }
   function setFov(f) { C.camera.fov = f; C.camera.updateProjectionMatrix(); }
 
@@ -82,7 +82,7 @@
     $('phMove').innerHTML = Object.keys(C.moves).filter(n => !/_L$/.test(n)).map(n => `<option value="${n}">${n[0].toUpperCase() + n.slice(1)}</option>`).join('');
     $('phMove').value = (C.currentMove() || 'idle').replace(/_L$/, ''); $('phFrame').value = .3; $('phBack').value = 'studio'; $('phLight').value = 'day'; $('phLens').value = C.camera.fov;
     $('phGrid').classList.toggle('on', C.grid.visible); $('phShare').style.display = navigator.canShare ? '' : 'none';
-    document.body.classList.add('photo'); pose(); say('');
+    document.body.classList.add('photo'); pose(); say(''); setTimeout(() => C.viewAll('angle'), 80);
     requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
   }
   function leave() {

@@ -1,4 +1,4 @@
-# Mythic Forge — Handoff (updated Nov 23 2026, 3am)
+# Mythic Forge — Handoff (updated Nov 23 2026, 4am)
 
 Read this first in a new chat. The full plan, rules and log are in PLAN.md.
 
@@ -31,15 +31,19 @@ Paint button, 5 tabs:
 How it works: a piece is split finer the first time it is painted; paint lives in its points; brushed skins are see-through copies with a mask (4 per piece). Saved on the phone in 'mf-paint2'. Paint and decals leave when a different part goes in that spot; skins on a spot stay.
 Phone layout: one scrolling bottom row, moves hide while painting, short panel, camera steps back so the mech sits above an open panel.
 
+## Phone first (his rule, Nov 23)
+He uses the phone mostly (Galaxy S23 Ultra). Every screen has a phone layout under 600px wide: tools row + moves row at the bottom, camera buttons behind the camera button (top right), short panels with rows that swipe sideways, part choices in one swipe row. The camera frames the mech in the free part of the screen (fitDist + coverPx in index.html). Root bug fixed Nov 23: the canvas used to go on the page wider than a phone, which made the phone lay the app out as a wide zoomed-out page; keep renderer.setSize before the canvas is added, and keep the pixel ratio cap of 2. Not yet tried on his real phone.
+
 ## Bots (run before pushing)
+- python3 tools/bot/phone_bot.py -> must say ALL OK (every push)
 - python3 tools/bot/paint_bot.py index.html  -> must say ALL OK (paint or phone-layout changes)
 - python3 tools/bot/weapon_bot.py standard:0 heavy:1 brawler:4 squat:9 sleek:5 scout:6 -> 0 clips, 0 floating (anything that moves or holds parts; body:starter number, 0 = Hero, 1 = Walker)
 - python3 tools/bot/shoulder_bot.py standard heavy -> all OK
 They need playwright + chrome and three.js 0.170 at /tmp/t/node_modules/three (npm i three@0.170.0 in /tmp/t).
-Last run Nov 23 3am on the live page: paint ALL OK, weapon 25/25 clean on all six bodies above, shoulder 72/72 ok on both.
+Last run Nov 23 4am on the live page: phone ALL OK, paint ALL OK, weapon 25/25 clean on all six bodies above, shoulder 72/72 ok on both.
 
 ## Next up, in order
-1. His feedback: paint on a real phone, the Hero + Walker sets, Photo mode (none tested on a real phone yet, only the bots).
+1. His feedback from the real phone: does it now fit the screen, paint, the Hero + Walker sets, Photo mode (only the bots have tried it).
 2. Stances: weapon attacks per weapon type (so Punch fits the weapon), a carry for every weapon, then the older notes (Relaxed shield closer, two sabers crossing). (Bazooka is done: it rests just above the shoulder part, level, clean on six bodies.)
 3. Second pass on the sets from his notes; more variants per spot (his kit rule: think more than 3).
 4. Item 7, More moves.
@@ -56,6 +60,7 @@ Parked ideas (Add-ons in PLAN.md): emblem editor, share codes, part scale / hide
 - P5 Element bits: 10-16 per part ok, or a "how many" slider?
 
 ## His rules that matter here
+- Phone first: every screen must work on the phone; run the phone bot before every push (Nov 23).
 - Every stance must fit the move being played (Nov 23).
 - Go through changes with him before pushing; build together, floor by floor; show which skills are used.
 - Don't rebuild the wheel: check free open-source first (MIT / Apache / BSD / CC0 only), credit in README.

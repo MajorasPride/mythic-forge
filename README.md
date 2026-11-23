@@ -5,7 +5,7 @@ Fresh start, Nov 2026. Start here: [HANDOFF.md](HANDOFF.md). Plan, rules and log
 
 Open `index.html` in a browser. Frames and moves are made in Blender by the scripts in `tools/blender/`.
 
-Paint (live since Nov 23 2026; `paint.js` + `materials.js`): (skins, brushes, Blend, weathering, gradient, decals, Mark, layers, elements, glow / night). Phone test bot: `python3 tools/bot/paint_bot.py`. Paint code: `paint.js`; skins: `materials.js` (brought over from the old Mythic Forge in the titan-clash repo).
+Paint (live since Nov 23 2026; `paint.js` + `materials.js`): (skins, brushes, Blend, weathering, gradient, decals, Mark, layers, elements, glow / night). Phone bots: `python3 tools/bot/phone_bot.py` (every screen) and `python3 tools/bot/paint_bot.py` (paint). Paint code: `paint.js`; skins: `materials.js` (brought over from the old Mythic Forge in the titan-clash repo).
 
 Photo mode: `photo.js`. Body parts are made in Blender from code: `tools/blender/parts_all.py` (uses the Blender `bpy` Python module, GPL, as a build tool only; nothing from Blender ships in the app).
 
