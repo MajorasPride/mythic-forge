@@ -1,6 +1,7 @@
 # Mythic Forge (fresh start) — Plan & Rules
 
 ## Now
+Nov 22 late: items 1-6 + Part Maker are LIVE. Next: bazooka stance fix (bot must go clean), then the other stance notes (Relaxed shield closer, two sabers crossing), then 7 More moves.
 Mythic Forge rebuilt from the ground up (Nov 22, 2026). Phase 3 done and live (Nov 22): every spot has body parts (4 to 10 choices each), toon shading + outlines. Next: Phase 5 save/export: Body panel with 6 presets + 8 sliders reshaping the frame live, moves keep playing.
 Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
 
@@ -25,13 +26,18 @@ Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
 2. Paint schemes (his kit's colour sets) + My colours (Main / Second / Trim / Glow) - built. Later: bring over the OLD Mythic Forge paint (brushes, skins, ethereal paint, layers in materials.js) instead of rebuilding it.
 3. Starter mechs (his kit's 10 build sheets, each with a body preset + colours) - built
 4. Random mech button - built
-5. Weapons: energy swords, shields, missile pods, rifles (hands, shoulders, back)
-6. Details: vents, antennas, spikes, emblems stuck anywhere
+5. Weapons (his T044 Weapons kit + 2 new): 17 hand weapons (9 swords/axes/lances, 4 guns, 4 shields) and 4 shoulder weapons; each hand + each shoulder has its own spot; shields strap on the forearm; picking one makes the hand grip; starters come with his kit's loadouts - LIVE Nov 22. Easy to reach: Weapons row in Build (Right hand / Left hand / Shoulders). Wrists auto-bend so held weapons point forward and out, hand weapons are sized to the arm, shields to the forearm. Later: leg pods, rocket fist, back-mounted weapons, weapon moves (with 7).
+6. Details (made in Blender with his kit's shape tools, tools/blender/parts_details.py): 21 in 5 groups (Antennas, Vents, Spikes, Fins, Emblems). Details button: pick one, tap the mech, it sticks flat on that spot and moves with that body part; Size, Turn, Mirror (on by default), Delete, Clear all; saved; takes the paint - LIVE Nov 22. Known gap: changing body sliders after placing can leave a detail a little off the surface (re-tap to fix); fix later by re-dropping onto the surface.
+6b. Part Maker (his idea Nov 22, 'the best for Mythic Forge'; pulled out of Add-ons) - LIVE Nov 22. Make button opens a sketch pad: pick the spot, build from Box / Wedge / Taper / Cylinder + Pen lines in linked front / side / top / 3D views. Drag empty space = new shape, drag a shape = move, yellow corner = resize, tap = select; Copy / Delete / Undo / Clear; colours Frame / Main / Second / Trim / Glow (Paint still recolours). Save + put it on: the part shows as a star in Build, plugs into the same joint as the kit's parts (sized and centred like the spot's first kit part), right side mirrored, saved on the phone (localStorage mf-myparts), edit or delete from the pad. Shapes are beveled in Blender (tools/blender/maker_shapes.py -> models/maker_shapes.js). Next: send a part to Blender for extra polish; shape turning; lines that follow a moved shape.
 7. More moves: hit, block, jump + heavy landing, knockdown; fast style: boost dash, sidestep, rolling dodge
 8. Photo mode: pose, background, save a picture
 9. Sounds: stomps, servo whirs (Sound Lab idea)
 
 ## Add-ons (parking lot, reviewed at the end of each phase)
+- Cool-look phase (Nov 22, his references: comic-inked Gunpla, RX-78/Jegan/Zaku/GM): bold ink lines (three.js fat lines), colour blocking, bulk, then redesign parts as layered plates. He'll draw parts on the design pad (real -> shapes -> joints -> elaborate).
+- UI from noclip.website (MIT): hide-all-UI key for Photo mode, fly camera (drag look, WASD, Shift faster), slide-out side panels. OMGLORD = colour/UI inspiration only.
+- Asset sources checked Nov 22: TheBaseMesh (CC0) has no body parts; only Kitbash A-F (61) + 2 breastplates - he said nothing for us right now. Quaternius Animated Mech Pack (CC0) is in his Drive - not wanted for now.
+- More bulk (Nov 22): he wants beefier robots overall; parked, he said not now.
 - Details: extra loose shapes (vents, antennas, spikes) stuck on top of body parts, with size / move / turn / color. Built once on Nov 22 by mistake as 'armor', removed from the app; comes back later.
 - Recolor body parts (paint schemes).
 - Movement styles (decided Nov 22): two flavors, picked per mech.
@@ -47,13 +53,27 @@ Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
 build-together, pro-3d-workflow, game-art, ponytail, repo-scout. Model: Opus.
 
 ## Rules
-- Go through changes with he before pushing.
+- Before pushing anything that moves or holds parts, run the weapon bot (tools/bot/weapon_bot.py); it must be 0 clips and 0 floating; shoulder_bot.py must be all OK.
+- Go through changes with him before pushing.
+- Rebuild the Part Maker shapes after changing them: python3 tools/blender/maker_shapes.py.
 - Never his real name anywhere public (use MajorasPride).
 - Original work only; outside assets/libraries must be MIT/Apache/BSD/CC0 and go in the credits list.
 - The old Mythic Forge ("Classic", inside the titan-clash repo) is frozen: nothing from it comes back unless he asks.
 - Keep this file correct; update Now and the Log every session.
 
 ## Log (newest first)
+- Nov 22 (late): Part Maker built and pushed with Weapons, Details and stances (he said push). Bots: weapon bot clean on standard:0, brawler:2; fixed whip hitting the floor (arm lifts when a weapon dips below the floor) and axe/hammer hitting the shoulder on punch (arm lifts using a pad box that turns with the pad); bot no longer calls stand-mounted shoulder weapons 'floating'. Shoulder bot 56/56 OK. KNOWN, he OK'd pushing anyway: bazooka still clips its shoulder/upper arm on punch and run (standard:2, heavy:0, squat:7) - fix next with his 'bazooka flatter on the shoulder' note.
+- Nov 22: feet toned down (he: 'a little wild'). foot_hero built from his Gundam foot reference (white ankle ring, blue wedge sloping to the toe, heel block, raised arch). He sent a 10-foot concept sheet (nomansnodead/dipo_muh) - use as inspiration only for our own foot variants (treads, claws, pistons, wedge, dome toe).
+- Nov 22: he chose BOTH base sets on one skeleton: Hero (Gundam) + Heavy (BattleTech/Archax walker, his refs). First parts: torso_hero (V chest, intakes, hatch, collar, abs) and torso_walker (box torso, cockpit band, missile rack, vents, belly). Waist block now dark frame; shoulder pads 2.6. Next: his feedback on the chests, then pelvis/skirt, shoulders, legs for each set.
+- Nov 22: step 1 'bold silhouette' started from his Gundam base reference (FM/RE100 RX-78 line art): thicker limbs in frame.js, wider waist block, small elbow/knee caps, bigger shoulders and feet, new 'gundam' body preset. Slider tuning hits a ceiling: the kit's chest/pelvis are too small and clamped. Next: build a Gundam-base part set in Blender to his reference (tall boxy chest + collar, abs block, big skirt, box shoulders touching the chest, long box thighs, flared calves + ankle guard, box feet, bigger fists), shown part by part. Bots not rerun since these shape changes.
+- Nov 22: Stance: Action added (full-body action poses from his reference photos: slash wind-up, overhead katana, great-sword wind-up, lance charge, whip crack, side-on pistol, rifle aim in a lunge, braced gatling, kneeling bazooka, braced shield). Hips drop/lift so feet stay on the floor. Ink lines on part edges are on (thin, 1px; fat lines later). Bot pass on Action still to do.
+- Nov 22: weapon stances built from his reference photos (Gunpla/anime): Ready = rifle two hands across chest, katana two hands blade up, energy sword raised back over the shoulder, heavy weapons on the shoulder two-handed, lance tucked, gatling chainsaw grip at hip, bazooka resting on the shoulder (arm lifts itself clear of the pad), pistol aimed, shield low in front. Relaxed = rifle/pistol hanging by the leg, sword down, shield upright at the side. Stance switch in Build. Off hand grabs two-handed weapons (2-bone reach). 4 more shoulder weapons (radar dome, mini gatling, flare launcher, saber rack). Bots: clean except small touches (squat bazooka during punch/run, whip on brawler while running) - next pass.
+- Nov 22: action poses (attack moves) researched for item 7: anticipation -> strike -> hold -> recovery; heavy machines sell weight in the wind-up and the return.
+- Nov 22 (his sketch): spiked roller tipped 40 deg out so its spikes fan up and out; shoulder weapons always sit on top, and on a bumpy top (spikes, fins) they ride on a stand with 4 legs above the bumps. Side mounts + brackets tried and dropped (not what he meant). Lesson: when he says 'to the side', ask for a sketch early. Sketch pad: inline widget with Send to Claude (strokes come back as text).
+- Nov 22: item 6 Details built (21 details).
+- Nov 22: floating fixed (shoulder weapons now stand on the real top-middle of the shoulder part and step forward/out only if a backpack is in the way; shields flush on the forearm; guns back in the grip). Bot now also checks nothing floats, and uses boxes that turn with each part (straight boxes gave false clips when the chest twisted). Mistake logged: test attachment, not just clipping.
+- Nov 22: run 'tearing' fixed: Blender keys start at frame 1, so every loop froze a frame then snapped; moves now shifted to start at 0 (copy the shared time list first, or it stacks). Weapon clip bot (tools/bot/weapon_bot.py): 21 weapons x 6 body types x 4 moves, left and right, 0 clips with any body part or the floor.
+- Nov 22: item 5 Weapons built (tools/blender/parts_weapons.py -> models/parts_weapons.js, 400 KB). Checked by numbers: weapons sit in the hands pointing forward, shields on the outside of the forearm, pods on the shoulder tops, saves and reloads, no errors.
 - Nov 22, 2026: he said some heads still look off. Cause: heads were stretched so crests/horns/antennae counted as head height (Titanheart's face got squashed, Bulwark got big). Now every head uses one even size and crests stick up. Pushed with his OK.
 - Nov 22, 2026: items 1-4 built: Backpack spot, Paint (11 kit schemes + My colours), Starter mechs (Vanguard, Bulwark, Titanheart, Ranger, Falcon, Paladin, Wraith, Mule, Patrol, Lionheart), Random. Parts now carry their material keys so they can be repainted. Tested at phone size: all starters, random, custom colour, backpack sits on the back, kept after reload, no errors. He reminded that old Mythic Forge has paint: logged to bring it over later. He said it works; pushed.
 - Nov 22, 2026: he said moving the camera is hard. Camera now: smooth drag, can't go under the floor, 2 fingers zoom + slide, Front / Side / 3/4 / Back buttons, picking a spot glides in on it, closing Build glides back out, and the picture lifts above an open panel. Pushed with his OK.

@@ -45,6 +45,45 @@ def _(F, A):
         A.box("armor2", (x*HS, -.03*HS, -.25*HS), (.035*HS, .04*HS, .16*HS), (.8, .8), .004*HS, rot=Matrix.Rotation(R(-18), 3, 'X'))
         A.box("accent", (x*HS, -.08*HS, -.37*HS), (.03*HS, .035*HS, .09*HS), (.2, .4), 0, rot=Matrix.Rotation(R(-35), 3, 'X'))
 
+# ---- BASE SETS (Nov 22): "Hero" (Gundam real-robot, his RX-78 reference) and "Heavy" (BattleTech / Archax walker, his references)
+TP = NS["torso_plugs"]
+@part("torso_hero", "torso", "Hero chest", "Gundam-style: tall V chest, yellow intakes, cockpit hatch, collar and abs.", TP(.58, .90, 1.10, .34))
+def _(F, A):
+    F.box("frame", (0, .02, .66), (.66, .50, .62), (1.2, 1))
+    A.box("armor", (0, -.02, .68), (.92, .62, .62), (1.28, 1.02), .05)
+    A.box("armor2", (0, 0, 1.04), (.50, .44, .12), (.85, .85), .02)                      # collar
+    A.box("armor2", (0, -.34, .58), (.30, .05, .30), (1.12, 1), .02)                     # cockpit hatch
+    for s in (-1, 1):
+        A.box("accent", (s * .27, -.34, .82), (.22, .05, .17), (1, 1), .015)            # intakes
+        for i in range(3): A.box("frame", (s * .27, -.37, .77 + i * .05), (.18, .02, .02), (1, 1), 0)
+        A.box("armor2", (s * .44, -.02, .62), (.06, .46, .40), (1, 1), .015)           # side plates
+    A.box("armor", (0, -.05, .25), (.42, .40, .16), (1.06, 1), .03)                       # abs
+    A.box("armor", (0, -.04, .09), (.34, .36, .14), (1.08, 1), .03)
+@part("torso_walker", "torso", "Walker torso", "BattleTech / Archax heavy: huge box torso, sunk cockpit, missile rack, vents.", TP(.68, .82, 1.02, .42))
+def _(F, A):
+    F.box("frame", (0, .02, .62), (.80, .62, .60), (1.05, 1))
+    A.box("armor", (0, -.02, .62), (1.16, .84, .74), (1.04, .82), .06, front=(1, .92))
+    A.box("armor2", (0, -.43, .86), (.46, .05, .17), (1, 1), .02)                        # cockpit band
+    A.box("glow", (0, -.46, .86), (.36, .01, .07), (1, 1), 0)
+    A.box("armor2", (-.32, -.42, .54), (.34, .07, .30), (1, 1), .02)                    # missile rack
+    for i in range(3):
+        for j in range(2): A.cyl("joint", (-.42 + i * .1, -.465, .48 + j * .12), .035, .03, 'Y', 6)
+    for i in range(4): A.box("frame", (.32, -.43, .44 + i * .07), (.30, .03, .035), (1, 1), 0)   # vent slats
+    A.box("accent", (.32, -.43, .74), (.30, .02, .05), (1, 1), 0)
+    A.box("armor2", (0, -.10, .21), (.62, .62, .20), (1.12, 1), .03)                       # belly
+    A.box("armor2", (0, .06, 1.02), (.80, .60, .08), (.95, .95), .02)                      # roof
+    for s in (-1, 1): A.box("armor2", (s * .60, -.02, .62), (.08, .70, .50), (1, 1), .02)  # side armor
+
+@part("foot_hero", "foot", "Hero foot", "Gundam foot (his reference): ankle guard ring, long wedge foot sloping to the toe, heel block, open arch.", NS["FT_PLUGS"], side=True)
+def _(F, A):
+    F.ball("joint", (0, 0, 0), .10, 8)
+    A.box("armor", (0, .02, .05), (.27, .29, .12), (1.02, 1.02), .03)                       # ankle guard ring
+    A.box("armor", (0, -.17, .0), (.20, .06, .16), (1, 1), .02, rot=Matrix.Rotation(R(18), 3, 'X'))   # front flap
+    A.box("accent", (0, -.14, -.09), (.26, .56, .24), (.86, .38), .03, front=(.78, .5), shift=(.14, 0))   # tall wedge, top pushed back so it slopes down to the toe
+    A.box("accent", (0, -.43, -.185), (.22, .2, .07), (.8, .5), .02)                         # toe tip, tucked into the wedge
+    A.box("accent", (0, .18, -.15), (.24, .17, .14), (.9, .8), .02)                          # heel block
+    A.box("frame", (0, -.05, -.20), (.18, .16, .03), (1, 1), .005)                            # arch (sits up off the ground)
+
 SLOT = {"torso": "chest", "head": "head", "pelvis": "pelvis", "shoulder": "shoulder", "upperarm": "upper_arm",
         "forearm": "forearm", "hand": "hand", "thigh": "thigh", "shin": "shin", "foot": "foot", "back": "back"}
 MODE = {"chest": "box", "head": "box", "pelvis": "box", "shoulder": "anchor", "foot": "anchor", "back": "anchor"}

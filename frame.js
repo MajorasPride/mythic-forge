@@ -6,6 +6,7 @@ window.MF_FRAME = (() => {
   const PRESETS = {
     standard: {},
     heavy:   { leg: .9, arm: 1.0, shoulder: 1.15, hip: 1.2, chest: 1.1, head: 1.0, bulk: 1.35 },   // toned down Nov 22: chest was a huge slab, head tiny
+    gundam:  { leg: 1.08, arm: 1.0, shoulder: .92, hip: 1.2, chest: 1.18, head: .85, bulk: 1.45 },   // classic RX-78 base (his reference, Nov 22)
     sleek:   { leg: 1.15, arm: 1.05, shoulder: .9, hip: .85, chest: .85, bulk: .8 },
     squat:   { leg: .7, arm: .8, shoulder: 1.2, hip: 1.3, chest: 1.2, head: 1.15, bulk: 1.4 },
     brawler: { leg: .9, arm: 1.3, shoulder: 1.25, chest: 1.2, head: .9, bulk: 1.3 },
@@ -40,8 +41,8 @@ window.MF_FRAME = (() => {
     for (const [side, s] of [['.L', 1], ['.R', -1]])
       for (const [n, [h, t]] of Object.entries(left)) B[n + side] = [[s * h[0], h[1], h[2]], [s * t[0], t[1], t[2]]];
     const b = p.bulk, k = p.height;
-    const W = { pelvis: [1.6 * p.hip, 1.0], waist: [.5 * b, .5 * b], chest: [2 * sx - .56, 1.6 * p.chest], head: [1.05 * hh, 1.0 * hh] };
-    const T = { shoulder: .55, upper_arm: .45, forearm: .5, hand: .7, thigh: .6, shin: .55 };
+    const W = { pelvis: [1.6 * p.hip, 1.0], waist: [1.15 * b, .85 * b], chest: [2 * sx - .56, 1.6 * p.chest], head: [1.05 * hh, 1.0 * hh] };
+    const T = { shoulder: .55, upper_arm: .62, forearm: .74, hand: .7, thigh: .92, shin: .84 };   // thicker limbs (Nov 22, bold silhouette)
     for (const side of ['.L', '.R']) {
       for (const [n, t] of Object.entries(T)) W[n + side] = [t * b, t * b];
       W['foot' + side] = [1.1 * b, .56];
