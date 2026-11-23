@@ -1,6 +1,7 @@
 # Mythic Forge (fresh start) — Plan & Rules
 
 ## Now
+Nov 22 night: he picked the Paint port (item 2b) next; floor F1 Skins + light first. Bazooka stance fix still waiting after it.
 Nov 22 late: items 1-6 + Part Maker are LIVE. Next: bazooka stance fix (bot must go clean), then the other stance notes (Relaxed shield closer, two sabers crossing), then 7 More moves.
 Mythic Forge rebuilt from the ground up (Nov 22, 2026). Phase 3 done and live (Nov 22): every spot has body parts (4 to 10 choices each), toon shading + outlines. Next: Phase 5 save/export: Body panel with 6 presets + 8 sliders reshaping the frame live, moves keep playing.
 Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
@@ -28,12 +29,20 @@ Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
 4. Random mech button - built
 5. Weapons (his T044 Weapons kit + 2 new): 17 hand weapons (9 swords/axes/lances, 4 guns, 4 shields) and 4 shoulder weapons; each hand + each shoulder has its own spot; shields strap on the forearm; picking one makes the hand grip; starters come with his kit's loadouts - LIVE Nov 22. Easy to reach: Weapons row in Build (Right hand / Left hand / Shoulders). Wrists auto-bend so held weapons point forward and out, hand weapons are sized to the arm, shields to the forearm. Later: leg pods, rocket fist, back-mounted weapons, weapon moves (with 7).
 6. Details (made in Blender with his kit's shape tools, tools/blender/parts_details.py): 21 in 5 groups (Antennas, Vents, Spikes, Fins, Emblems). Details button: pick one, tap the mech, it sticks flat on that spot and moves with that body part; Size, Turn, Mirror (on by default), Delete, Clear all; saved; takes the paint - LIVE Nov 22. Known gap: changing body sliders after placing can leave a detail a little off the surface (re-tap to fix); fix later by re-dropping onto the surface.
+2b. Paint port (his ask Nov 22 late: "all the paint we had before + the ideas for it, blending etc, from old Mythic Forge"). Copy, don't rebuild: old code lives in titan-clash/myth-forge (materials.js = 379 skins in 31 groups, self-contained FORGE_MATS {LIST, makeMat, tex}, triplanar so no UVs needed; brushes in forge-core.js paintStroke / skinStroke / eraseStroke / blendStroke; Mark groups in forge-m.js). Floors, each shown before push:
+   F1. Skins + light: copy materials.js; pick a skin for a whole colour slot (Main / Second / Trim / Frame) or for one picked body part; skin groups incl. Ethereal + animated FX skins; Brightness slider (40-120%, default 85%). Saved with the build.
+   F2. Brushes: Color, Spray can (Mist slider), Blotch, Eraser; Size / Strength; Both sides toggle (OFF by default); Undo. Paint saved with the build and follows slider reshaping.
+   F3. Skin brush + layers: brush a skin on (up to 4 brushed skins per part, newest on top); Blend mixes colours and skin tones over the whole mech across part edges, softening only the top overlay where one exists.
+   F4. Mark: mark several parts (both arms, all armor...), paint them together, save named groups.
+   F5. Old extras: Glow slot + Night preview, Paint by number (numbered panels), Element on a part (lava, ice, crystal...).
+   New paint ideas (Add-ons until he picks): gradient fill, eyedropper, swatch palette, decals / stencils (hazard stripes, unit numbers like "01", emblems), weathering brushes (edge wear, dirt, rust, scorch), layer list panel.
 6b. Part Maker (his idea Nov 22, 'the best for Mythic Forge'; pulled out of Add-ons) - LIVE Nov 22. Make button opens a sketch pad: pick the spot, build from Box / Wedge / Taper / Cylinder + Pen lines in linked front / side / top / 3D views. Drag empty space = new shape, drag a shape = move, yellow corner = resize, tap = select; Copy / Delete / Undo / Clear; colours Frame / Main / Second / Trim / Glow (Paint still recolours). Save + put it on: the part shows as a star in Build, plugs into the same joint as the kit's parts (sized and centred like the spot's first kit part), right side mirrored, saved on the phone (localStorage mf-myparts), edit or delete from the pad. Shapes are beveled in Blender (tools/blender/maker_shapes.py -> models/maker_shapes.js). Next: send a part to Blender for extra polish; shape turning; lines that follow a moved shape.
 7. More moves: hit, block, jump + heavy landing, knockdown; fast style: boost dash, sidestep, rolling dodge
 8. Photo mode: pose, background, save a picture
 9. Sounds: stomps, servo whirs (Sound Lab idea)
 
 ## Add-ons (parking lot, reviewed at the end of each phase)
+- Part Maker upgrades (Nov 22 ideas): angled cuts / chamfers (three-bvh-csg, MIT), side view depth + plate layering, detail stamps (vents, bolts, panel lines, hatches), trace a reference picture behind the pad, undo/redo + grid snap, colour per shape, export a part (.json / .glb).
 - Cool-look phase (Nov 22, his references: comic-inked Gunpla, RX-78/Jegan/Zaku/GM): bold ink lines (three.js fat lines), colour blocking, bulk, then redesign parts as layered plates. He'll draw parts on the design pad (real -> shapes -> joints -> elaborate).
 - UI from noclip.website (MIT): hide-all-UI key for Photo mode, fly camera (drag look, WASD, Shift faster), slide-out side panels. OMGLORD = colour/UI inspiration only.
 - Asset sources checked Nov 22: TheBaseMesh (CC0) has no body parts; only Kitbash A-F (61) + 2 breastplates - he said nothing for us right now. Quaternius Animated Mech Pack (CC0) is in his Drive - not wanted for now.
