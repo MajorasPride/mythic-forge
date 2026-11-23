@@ -5,7 +5,7 @@ Read this first in a new chat. The full plan, rules and log are in PLAN.md.
 ## Where things are
 - Live app: https://majoraspride.github.io/mythic-forge/
 - Repo: MajorasPride/mythic-forge (GitHub Pages serves the main branch). Never his real name anywhere public.
-- His PC copy (C:\Users\cc492\Documents\Personal Claude\mythic-forge) is a plain folder, NOT a git clone, and is behind GitHub since Nov 23. GitHub is the truth. Sync it only when he connects that folder.
+- His PC copy (in his Personal Claude folder, under mythic-forge) is a plain folder, NOT a git clone, and is behind GitHub since Nov 23. GitHub is the truth. Sync it only when he connects that folder.
 - The old Mythic Forge (creatures, 70 bodies) lives in the titan-clash repo under myth-forge/. This repo is the fresh start (mechs first).
 
 ## What is live
