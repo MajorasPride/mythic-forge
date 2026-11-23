@@ -47,8 +47,8 @@
 <script src="models/mech_standard.js"></script>
 <!-- the frame math: sliders in, bone positions and block sizes out -->
 <script src="frame.js"></script>
-<!-- body parts (chests first), made in Blender -->
-<script src="models/parts_chest.js"></script>
+<!-- body parts for every spot, made in Blender (tools/blender/parts_all.py) -->
+<script src="models/parts_all.js"></script>
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
@@ -192,33 +192,52 @@ const LIBRARY = window.MF_PARTS || {};                         // slot -> list o
 const loaded = {};                                             // part id -> loaded 3D model
 let slots = {}, selBone = null, mirrorOn = true, building = false;
 
-function loadPart(p) {
-  if (loaded[p.id]) return Promise.resolve(loaded[p.id]);
-  const bytes = Uint8Array.from(atob(p.glb), c => c.charCodeAt(0)).buffer;
+function loadPart(p, right) {
+  const key = p.id + (right ? 'R' : 'L');
+  if (loaded[key]) return Promise.resolve(loaded[key]);
+  const bytes = Uint8Array.from(atob(right && p.glbR ? p.glbR : p.glb), c => c.charCodeAt(0)).buffer;
   return new Promise(res => new GLTFLoader().parse(bytes, '', g => {
-    g.scene.traverse(m => { if (m.isMesh) { const c = m.material.color, glow = m.material.emissive && m.material.emissive.getHex() > 0;
-      m.material = toon(c.getHex(), glow); } });
-    loaded[p.id] = g.scene; res(g.scene);
+    g.scene.traverse(m => { if (m.isMesh) { const glow = m.material.emissive && m.material.emissive.getHex() > 0;
+      m.material = toon(m.material.color.getHex(), glow); } });
+    loaded[key] = g.scene; res(g.scene);
   }));
 }
 async function setPart(boneName, id) {
-  const b = bones[boneName], old = b.userData.part;
-  if (old) b.remove(old);
+  const b = bones[boneName];
+  if (b.userData.part) b.remove(b.userData.part);
   b.userData.part = null; b.userData.partId = id || null;
   if (b.userData.block) b.userData.block.visible = !id;          // the gray stand-in shows only when the spot is empty
-  if (id) {
-    const p = LIBRARY[SLOT_OF(boneName)].find(q => q.id === id), model = (await loadPart(p)).clone();
-    const holder = new THREE.Group(); holder.add(model); holder.userData.size = p.size;
-    b.add(holder); b.userData.part = holder; fitPart(boneName);
-  }
   slots[boneName] = id || null;
+  if (!id) return;
+  const p = LIBRARY[SLOT_OF(boneName)].find(q => q.id === id);
+  const model = (await loadPart(p, boneName.endsWith('.R'))).clone();
+  if (b.userData.partId !== id) return;                          // picked something else while loading
+  const holder = new THREE.Group(); holder.add(model); holder.userData.p = p;
+  b.add(holder); b.userData.part = holder; fitPart(boneName);
 }
-// stretch the part to the spot's size, standing straight up at the joint (Blender size = width, depth, height)
+// Fit a part to its spot. Sizes from Blender are [width, depth, height]; three.js is y-up, so height -> y, depth -> z.
+//   box:    stands straight up on the joint, stretched to the spot's box (chest, head, pelvis)
+//   limb:   hangs from the joint along the bone, stretched to the bone's length and thickness
+//   anchor: keeps the kit's own joint point, scaled to the mech's size (shoulder pads, feet)
+const DOWN = new THREE.Vector3(0, -1, 0);
 function fitPart(boneName) {
   const b = bones[boneName], h = b.userData.part; if (!h) return;
-  const [w, len, d] = b.userData.size, [pw, pd, ph] = h.userData.size;
-  h.quaternion.copy(b.userData.restQ).invert();                  // line up with the world, not the bone
-  h.children[0].scale.set(w / pw, len / ph, d / pd);
+  const p = h.userData.p, [pw, pd, ph] = p.size, [w, len, d] = b.userData.size, model = h.children[0];
+  const toWorld = b.userData.restQ, toBone = toWorld.clone().invert(), k = params.height, bulk = params.bulk;
+  h.position.set(0, 0, 0);
+  if (p.mode === 'box') { h.quaternion.copy(toBone); model.scale.set(w / pw, len / ph, d / pd); }
+  else if (p.mode === 'limb') {
+    const dir = b.userData.tip.clone().applyQuaternion(toWorld).normalize();
+    h.quaternion.copy(toBone).multiply(new THREE.Quaternion().setFromUnitVectors(DOWN, dir));
+    model.scale.set(w / pw, len / ph, d / pd);
+  } else if (SLOT_OF(boneName) === 'shoulder') {
+    const S = 2.3 * k * Math.sqrt(bulk), out = boneName.endsWith('.R') ? -1 : 1;
+    h.quaternion.copy(toBone); model.scale.setScalar(S);
+    // the kit's shoulder point sits a little inside and above the arm's top: put it there
+    h.position.copy(b.userData.tip).add(new THREE.Vector3(-.18 * S * out, .10 * S, 0).applyQuaternion(toBone));
+  } else {                                                       // foot: ankle point, sole on the ground
+    h.quaternion.copy(toBone); model.scale.set(1.1 * bulk * k / pw * 1.4, .63 * k / .22, 1.7 * Math.sqrt(bulk) * k / pd * 1.1);
+  }
 }
 function refreshParts() { for (const n of Object.keys(bones)) fitPart(n); }
 function pick(id) {
@@ -237,12 +256,12 @@ function showChoices() {
   const box = document.getElementById('choices'); box.innerHTML = '';
   if (!selBone) return hint('Tap a spot on the mech (or pick it here), then pick a body part for it.');
   const list = LIBRARY[SLOT_OF(selBone)] || [];
-  if (!list.length) return hint(NICE(selBone) + ': no body parts made yet. Chests come first; the rest are next.');
+  if (!list.length) return hint(NICE(selBone) + ': this spot is part of the frame (no body parts for it yet).');
   hint(NICE(selBone) + ': pick a body part.');
   const add = (label, id) => { const b = document.createElement('button'); b.textContent = label; b.classList.toggle('on', (slots[selBone] || null) === id);
     b.onclick = () => pick(id); box.append(b); };
   add('Frame only', null);
-  list.forEach(p => add(p.name.replace(' chest', ''), p.id));
+  list.forEach(p => add(p.name, p.id));
 }
 function hint(t) { document.getElementById('buildHint').textContent = t; }
 document.getElementById('mirrorBtn').onclick = e => { mirrorOn = !mirrorOn; e.target.classList.toggle('on', mirrorOn); };
