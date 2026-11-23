@@ -1,7 +1,7 @@
 # Mythic Forge (fresh start) — Plan & Rules
 
 ## Now
-Nov 22 night: Paint port (item 2b) F1-F5 built on the TEST page only (test.html, live index untouched) - waiting for his look on the phone before it goes into index.html. Bazooka stance fix still waiting after it.
+Nov 23 (after midnight): Paint port (item 2b) F1-F5 + round 2 + round 3 are on the TEST page only (test.html, live index untouched). He said his phone screen 'can't see everything' and 'run a bot': fixed the phone layout and added tools/bot/paint_bot.py (ALL OK). Waiting for his look on the phone before paint goes into index.html (see Questions at the bottom). Bazooka stance fix still waiting after it.
 Nov 22 late: items 1-6 + Part Maker are LIVE. Next: bazooka stance fix (bot must go clean), then the other stance notes (Relaxed shield closer, two sabers crossing), then 7 More moves.
 Mythic Forge rebuilt from the ground up (Nov 22, 2026). Phase 3 done and live (Nov 22): every spot has body parts (4 to 10 choices each), toon shading + outlines. Next: Phase 5 save/export: Body panel with 6 presets + 8 sliders reshaping the frame live, moves keep playing.
 Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
@@ -42,7 +42,15 @@ Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
      Light + (Elements on picked / marked parts: Lava, Fire, Stone, Crystal, Forest, Water, Ice, Storm, Lightning, Cosmic, Gold, Sand, Void = skin + glow colour; Brightness; Glow strength; Night preview).
      How it works: a part piece is split finer (TessellateModifier) the first time it's painted; paint lives in its vertices (colour + cover + glow); brushed skins are see-through copies on top with a mask, up to 4 per piece, newest on top; Blend mixes colours and skin tones across part edges and only softens a skin overlay's edge where one is on top. Saved on the phone in 'mf-paint2' (squeezed); paint stays with a spot until a different part goes on it; skins on a part stay through part swaps.
      Round 2 (Nov 22 late): the gray stand-in blocks, the waist and the joint caps take skins + brushes too (frame pieces are remade with a fixed number of points, so their paint stays on when the Body sliders move); details take brushes (each detail got a lasting id, d.uid). Picked / marked boxes and paint by number work on all of them. Old "grow element bits" (lava rocks etc.) not brought over, elements are skin + glow only.
-   New paint ideas (Add-ons until he picks): gradient fill, eyedropper, swatch palette, decals / stencils (hazard stripes, unit numbers like "01", emblems), weathering brushes (edge wear, dirt, rust, scorch), layer list panel.
+     Round 3 (Nov 23, he said "build what you can"), all on test.html:
+       Phone fit: on a narrow screen the bottom bar is ONE scrolling row, the move buttons + Bones hide while Paint is open, the paint panel is short (rows scroll sideways), view buttons are smaller, and the camera steps back so the whole mech sits above an open panel (fitDist in test.html: screen shape + open panel). A tap is timed by the event's own clock so a slow frame can't turn it into a long press.
+       Paint bot: python3 tools/bot/paint_bot.py [page]. S23 Ultra screen (384x824), real touch events. Checks the mech fits above the panel, every control in all 5 tabs can be reached, every brush paints with a finger, undo, pick colour, gradient, skin brush, skins, tap to pick, layer list, elements + bits, mark + fill marked, decals, and that paint / decals / bits come back after a reload. It caught a real bug (a freshly painted part got its brushed skins doubled on the next recolour) - fixed.
+       New brushes: Gradient (tap a part: fades from the colour to a second colour; top-bottom / outside-middle / front-back), Wear (Worn edges = bare metal only along hard edges, Dirt, Rust streaks, Scorch), Pick colour (eyedropper), colour swatches (scheme colours + last 8 used).
+       Decals tab (three.js DecalGeometry, MIT): Text (up to 8 letters, e.g. 01), Hazard stripes, Stripe, Star, Chevrons, Arrow, Warning, Roundel, Bolt, Cross. Pick one, tap the mech; Size / Turn keep changing the one just placed; Both sides; Remove last / Clear picked part / Clear all. Decals wrap onto the surface, ride on the part's pieces (move + stretch with it), are saved, and go away when a different part is put in that spot.
+       Layer list (Mark tab): what's brushed on the picked part (each brushed skin, Colour paint, Glow) with remove, and bring-to-top for skins. A 5th skin on a piece now reuses an emptied layer first.
+       Element bits (the old forge's "grow element bits"): an element on a part grows 10-16 small pieces on it (Lava / Stone / Gold rocks, Ice / Crystal crystals, Fire flames, Water drops, Storm puffs, Lightning / Void shards, Cosmic floating stars, Forest / Sand mounds). Same spots every time (seeded), saved; "Grow bits" button turns them off.
+       Checked: paint bot ALL OK; weapon bot standard:0 25/25 clean and shoulder bot standard 56/56 ok on test.html.
+   New paint ideas: gradient fill, eyedropper, swatches, decals, weathering brushes and the layer list are BUILT (round 3). Still ideas: your own picture as a decal, kill marks / squad logos, bits density slider, glow decals, paint on the live page's Photo mode.
 6b. Part Maker (his idea Nov 22, 'the best for Mythic Forge'; pulled out of Add-ons) - LIVE Nov 22. Make button opens a sketch pad: pick the spot, build from Box / Wedge / Taper / Cylinder + Pen lines in linked front / side / top / 3D views. Drag empty space = new shape, drag a shape = move, yellow corner = resize, tap = select; Copy / Delete / Undo / Clear; colours Frame / Main / Second / Trim / Glow (Paint still recolours). Save + put it on: the part shows as a star in Build, plugs into the same joint as the kit's parts (sized and centred like the spot's first kit part), right side mirrored, saved on the phone (localStorage mf-myparts), edit or delete from the pad. Shapes are beveled in Blender (tools/blender/maker_shapes.py -> models/maker_shapes.js). Next: send a part to Blender for extra polish; shape turning; lines that follow a moved shape.
 7. More moves: hit, block, jump + heavy landing, knockdown; fast style: boost dash, sidestep, rolling dodge
 8. Photo mode: pose, background, save a picture
@@ -106,3 +114,10 @@ build-together, pro-3d-workflow, game-art, ponytail, repo-scout. Model: Opus.
 
 ## Credits
 - three.js (MIT)
+
+## Questions for him (answer when you can; nothing here blocks the next step)
+- P1 (Nov 23) Paint is only on the test page. After you try it on the phone: move it into the live Mythic Forge as is, or change things first?
+- P2 (Nov 23) Phone layout on the test page: one scrolling button row at the bottom, and the move buttons hide while you paint. Keep that for the live page too? (Default: yes.)
+- P3 (Nov 23) Joint caps (elbows, knees) now take the colour scheme's joint colour instead of always dark gray. Keep? (Default: keep.)
+- P4 (Nov 23) Decals: which emblems do you want next? Examples: kill marks, squad logo, your own picture, glowing decals. (Default: wait for your picks.)
+- P5 (Nov 23) Element bits: is 10-16 pieces per part the right amount, or do you want a "how many" slider? (Default: leave as is.)
