@@ -26,13 +26,14 @@
   .sw { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 50%; }
   .hint { opacity: .65; margin: 0 0 10px; }
   #views { position: absolute; top: 40px; right: 8px; display: flex; flex-direction: column; gap: 6px; }
-  #views button { min-height: 40px; min-width: 64px; font-size: 14px; padding: 0 10px; background: #2c2c30cc; }
+  #views button { min-height: 40px; min-width: 64px; font-size: 14px; padding: 0 10px; background: #2c2c30cc; touch-action: none; user-select: none; }
+  #view canvas { touch-action: none; }
 </style>
 </head>
 <body>
 <div id="view"></div>
 <div id="top"><span>Mythic Forge</span><small>Phase 3 · Body parts</small></div>
-<div id="views"><button data-view="front">Front</button><button data-view="side">Side</button><button data-view="angle">3/4</button><button data-view="back">Back</button></div>
+<div id="views"><button data-view="front">Front</button><button data-view="side">Side</button><button data-view="angle">3/4</button><button data-view="back">Back</button><button data-hold="left" aria-label="Turn left">⟲</button><button data-hold="right" aria-label="Turn right">⟳</button><button data-hold="in" aria-label="Zoom in">＋</button><button data-hold="out" aria-label="Zoom out">－</button><button data-hold="up" aria-label="Look from higher">▲</button><button data-hold="down" aria-label="Look from lower">▼</button></div>
 <div id="body"><div id="presets"></div><div id="sliders"></div></div>
 <div id="build">
   <p class="hint" id="buildHint">Tap a spot on the mech (or pick it here), then pick a body part for it.</p>
@@ -87,6 +88,21 @@ function viewAll(dirName) {
   glide(t, t.clone().addScaledVector(dir, Math.max(mechTop * 2.3, 14)));
 }
 document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => viewAll(b.dataset.view));
+// press-and-hold buttons for phones (no fiddly finger dragging): turn, zoom, look higher/lower
+let holding = null;
+function nudge(dt) {
+  if (!holding) return; camTo = null;
+  const off = camera.position.clone().sub(controls.target), sph = new THREE.Spherical().setFromVector3(off), sp = 1.6 * dt;
+  if (holding === 'left') sph.theta -= sp; if (holding === 'right') sph.theta += sp;
+  if (holding === 'up') sph.phi = Math.max(.15, sph.phi - sp * .7); if (holding === 'down') sph.phi = Math.min(Math.PI * .49, sph.phi + sp * .7);
+  if (holding === 'in') sph.radius = Math.max(controls.minDistance, sph.radius * (1 - dt * 1.2));
+  if (holding === 'out') sph.radius = Math.min(controls.maxDistance, sph.radius * (1 + dt * 1.2));
+  camera.position.copy(controls.target).add(new THREE.Vector3().setFromSpherical(sph));
+}
+document.querySelectorAll('[data-hold]').forEach(b => {
+  b.addEventListener('pointerdown', e => { e.preventDefault(); holding = b.dataset.hold; b.classList.add('on'); });
+  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) b.addEventListener(ev, () => { holding = null; b.classList.remove('on'); });
+});
 scene.background = new THREE.Color(0x17181c);
 scene.add(new THREE.HemisphereLight(0xdfe6ff, 0x30302c, 1.6));
 const sun = new THREE.DirectionalLight(0xffffff, 2.4); sun.position.set(6, 12, 8); scene.add(sun);
@@ -358,6 +374,7 @@ renderer.setAnimationLoop(() => {
     mixer.update(clock.getDelta());   // play the move
     keepShape();                      // then shift every joint to this mech's shape
   }
+  nudge(1 / 60);
   if (camTo) {
     controls.target.lerp(camTo.target, .15); camera.position.lerp(camTo.pos, .15);
     if (camera.position.distanceTo(camTo.pos) < .05) camTo = null;
