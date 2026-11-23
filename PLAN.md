@@ -1,7 +1,7 @@
 # Mythic Forge (fresh start) — Plan & Rules
 
 ## Now
-Nov 22 night: he picked the Paint port (item 2b) next; floor F1 Skins + light first. Bazooka stance fix still waiting after it.
+Nov 22 night: Paint port (item 2b) F1-F5 built on the TEST page only (test.html, live index untouched) - waiting for his look on the phone before it goes into index.html. Bazooka stance fix still waiting after it.
 Nov 22 late: items 1-6 + Part Maker are LIVE. Next: bazooka stance fix (bot must go clean), then the other stance notes (Relaxed shield closer, two sabers crossing), then 7 More moves.
 Mythic Forge rebuilt from the ground up (Nov 22, 2026). Phase 3 done and live (Nov 22): every spot has body parts (4 to 10 choices each), toon shading + outlines. Next: Phase 5 save/export: Body panel with 6 presets + 8 sliders reshaping the frame live, moves keep playing.
 Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
@@ -35,6 +35,13 @@ Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
    F3. Skin brush + layers: brush a skin on (up to 4 brushed skins per part, newest on top); Blend mixes colours and skin tones over the whole mech across part edges, softening only the top overlay where one exists.
    F4. Mark: mark several parts (both arms, all armor...), paint them together, save named groups.
    F5. Old extras: Glow slot + Night preview, Paint by number (numbered panels), Element on a part (lava, ice, crystal...).
+   BUILT Nov 22 night (test.html, all floors at once, he said "work on it all"): paint.js + materials.js + textures-bark.js. Paint button opens a panel with 4 tabs:
+     Brushes (Color, Spray + Mist, Blotch splats with droplets, Fill = tap a piece, Blend, Eraser; Size / Strength; Paints with colour or a skin; Glow paint; Both sides off by default; Undo 25 steps; Clear picked / all). The mech holds still and one finger paints while a brush is on; two fingers or the view buttons move the camera.
+     Skins (colour scheme + My colours moved here from Build; Put on: Whole mech Main / Second / Trim / Frame / Glow bits, Picked part, Marked parts; 31 groups; pattern size; Clear skins). Tap a part (brush Off) to pick it (yellow box).
+     Mark (tap to mark, cyan boxes; Fill marked; save / load / delete named groups; Paint by number = numbered pieces on the picked part, tap a number to fill it).
+     Light + (Elements on picked / marked parts: Lava, Fire, Stone, Crystal, Forest, Water, Ice, Storm, Lightning, Cosmic, Gold, Sand, Void = skin + glow colour; Brightness; Glow strength; Night preview).
+     How it works: a part piece is split finer (TessellateModifier) the first time it's painted; paint lives in its vertices (colour + cover + glow); brushed skins are see-through copies on top with a mask, up to 4 per piece, newest on top; Blend mixes colours and skin tones across part edges and only softens a skin overlay's edge where one is on top. Saved on the phone in 'mf-paint2' (squeezed); paint stays with a spot until a different part goes on it; skins on a part stay through part swaps.
+     Not paintable yet: the gray stand-in blocks and the waist / joint frame pieces (only real body parts and weapons); details take skins from the whole-mech slots but not brushes. Old "grow element bits" (lava rocks etc.) not brought over, elements are skin + glow only.
    New paint ideas (Add-ons until he picks): gradient fill, eyedropper, swatch palette, decals / stencils (hazard stripes, unit numbers like "01", emblems), weathering brushes (edge wear, dirt, rust, scorch), layer list panel.
 6b. Part Maker (his idea Nov 22, 'the best for Mythic Forge'; pulled out of Add-ons) - LIVE Nov 22. Make button opens a sketch pad: pick the spot, build from Box / Wedge / Taper / Cylinder + Pen lines in linked front / side / top / 3D views. Drag empty space = new shape, drag a shape = move, yellow corner = resize, tap = select; Copy / Delete / Undo / Clear; colours Frame / Main / Second / Trim / Glow (Paint still recolours). Save + put it on: the part shows as a star in Build, plugs into the same joint as the kit's parts (sized and centred like the spot's first kit part), right side mirrored, saved on the phone (localStorage mf-myparts), edit or delete from the pad. Shapes are beveled in Blender (tools/blender/maker_shapes.py -> models/maker_shapes.js). Next: send a part to Blender for extra polish; shape turning; lines that follow a moved shape.
 7. More moves: hit, block, jump + heavy landing, knockdown; fast style: boost dash, sidestep, rolling dodge
@@ -59,6 +66,7 @@ Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
 - More moves, painting, sculpting (SculptGL), sharing builds
 
 ## Skills
+Paint port: build-together, ponytail, karpathy-guidelines, game-art.
 build-together, pro-3d-workflow, game-art, ponytail, repo-scout. Model: Opus.
 
 ## Rules
