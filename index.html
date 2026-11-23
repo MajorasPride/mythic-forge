@@ -220,16 +220,18 @@ async function setPart(boneName, id) {
 //   limb:   hangs from the joint along the bone, stretched to the bone's length and thickness
 //   anchor: keeps the kit's own joint point, scaled to the mech's size (shoulder pads, feet)
 const DOWN = new THREE.Vector3(0, -1, 0);
+// keep each part's own shape: height/length fits exactly, width and depth may only stretch 20% away from it
+const keep = (t, p, along) => Math.min(Math.max(t / p, along * .8), along * 1.2);
 function fitPart(boneName) {
   const b = bones[boneName], h = b.userData.part; if (!h) return;
   const p = h.userData.p, [pw, pd, ph] = p.size, [w, len, d] = b.userData.size, model = h.children[0];
   const toWorld = b.userData.restQ, toBone = toWorld.clone().invert(), k = params.height, bulk = params.bulk;
   h.position.set(0, 0, 0);
-  if (p.mode === 'box') { h.quaternion.copy(toBone); model.scale.set(w / pw, len / ph, d / pd); }
+  if (p.mode === 'box') { const sy = len / ph; h.quaternion.copy(toBone); model.scale.set(keep(w, pw, sy), sy, keep(d, pd, sy)); }
   else if (p.mode === 'limb') {
     const dir = b.userData.tip.clone().applyQuaternion(toWorld).normalize();
     h.quaternion.copy(toBone).multiply(new THREE.Quaternion().setFromUnitVectors(DOWN, dir));
-    model.scale.set(w / pw, len / ph, d / pd);
+    model.scale.set(w / pw, len / ph, d / pd);           // limbs: fill the bone (thickness is already set by the Thickness slider)
   } else if (SLOT_OF(boneName) === 'shoulder') {
     const S = 2.3 * k * Math.sqrt(bulk), out = boneName.endsWith('.R') ? -1 : 1;
     h.quaternion.copy(toBone); model.scale.setScalar(S);

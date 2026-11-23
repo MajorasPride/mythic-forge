@@ -5,7 +5,7 @@ window.MF_FRAME = (() => {
   const STANDARD = { height: 1, leg: 1, arm: 1, shoulder: 1, hip: 1, chest: 1, head: 1, bulk: 1 };
   const PRESETS = {
     standard: {},
-    heavy:   { leg: .85, arm: .95, shoulder: 1.3, hip: 1.25, chest: 1.35, head: .9, bulk: 1.5 },
+    heavy:   { leg: .9, arm: 1.0, shoulder: 1.15, hip: 1.2, chest: 1.1, head: 1.0, bulk: 1.35 },   // toned down Nov 22: chest was a huge slab, head tiny
     sleek:   { leg: 1.15, arm: 1.05, shoulder: .9, hip: .85, chest: .85, bulk: .8 },
     squat:   { leg: .7, arm: .8, shoulder: 1.2, hip: 1.3, chest: 1.2, head: 1.15, bulk: 1.4 },
     brawler: { leg: .9, arm: 1.3, shoulder: 1.25, chest: 1.2, head: .9, bulk: 1.3 },

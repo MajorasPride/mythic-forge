@@ -22,7 +22,7 @@ STANDARD = dict(height=1.0, leg=1.0, arm=1.0, shoulder=1.0, hip=1.0, chest=1.0, 
 # ---- PRESETS (start here, then nudge the sliders). Inspired-by feel only, original designs.
 PRESETS = {
     "standard": {},                                                                                       # balanced hero frame
-    "heavy":    dict(leg=.85, arm=.95, shoulder=1.3, hip=1.25, chest=1.35, head=.9, bulk=1.5),            # wide tank, short legs
+    "heavy":    dict(leg=.9, arm=1.0, shoulder=1.15, hip=1.2, chest=1.1, head=1.0, bulk=1.35),   # toned down Nov 22            # wide tank, short legs
     "sleek":    dict(leg=1.15, arm=1.05, shoulder=.9, hip=.85, chest=.85, bulk=.8),                       # slim, tall model-kit look
     "squat":    dict(leg=.7, arm=.8, shoulder=1.2, hip=1.3, chest=1.2, head=1.15, bulk=1.4),                # low, heavy walker
     "brawler":  dict(leg=.9, arm=1.3, shoulder=1.25, chest=1.2, head=.9, bulk=1.3),                       # long gorilla arms
