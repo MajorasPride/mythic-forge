@@ -36,7 +36,7 @@ Live (Phase 1): https://majoraspride.github.io/mythic-forge/ once Pages is on.
 build-together, pro-3d-workflow, game-art, ponytail, repo-scout. Model: Opus.
 
 ## Rules
-- Go through changes with Clayton before pushing.
+- Go through changes with he before pushing.
 - Never his real name anywhere public (use MajorasPride).
 - Original work only; outside assets/libraries must be MIT/Apache/BSD/CC0 and go in the credits list.
 - The old Mythic Forge ("Classic", inside the titan-clash repo) is frozen: nothing from it comes back unless he asks.
