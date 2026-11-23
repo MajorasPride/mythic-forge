@@ -22,11 +22,11 @@ STANDARD = dict(height=1.0, leg=1.0, arm=1.0, shoulder=1.0, hip=1.0, chest=1.0, 
 # ---- PRESETS (start here, then nudge the sliders). Inspired-by feel only, original designs.
 PRESETS = {
     "standard": {},                                                                                       # balanced hero frame
-    "heavy":    dict(leg=.85, arm=.95, shoulder=1.3, hip=1.25, chest=1.35, head=.8, bulk=1.5),            # wide tank, short legs
+    "heavy":    dict(leg=.85, arm=.95, shoulder=1.3, hip=1.25, chest=1.35, head=.9, bulk=1.5),            # wide tank, short legs
     "sleek":    dict(leg=1.15, arm=1.05, shoulder=.9, hip=.85, chest=.85, bulk=.8),                       # slim, tall model-kit look
-    "squat":    dict(leg=.7, arm=.8, shoulder=1.2, hip=1.3, chest=1.2, head=.7, bulk=1.4),                # low, heavy walker
-    "brawler":  dict(leg=.9, arm=1.3, shoulder=1.25, chest=1.2, head=.8, bulk=1.3),                       # long gorilla arms
-    "scout":    dict(leg=1.25, shoulder=.85, hip=.8, chest=.8, head=.9, bulk=.7),                         # tall, light, fast
+    "squat":    dict(leg=.7, arm=.8, shoulder=1.2, hip=1.3, chest=1.2, head=1.15, bulk=1.4),                # low, heavy walker
+    "brawler":  dict(leg=.9, arm=1.3, shoulder=1.25, chest=1.2, head=.9, bulk=1.3),                       # long gorilla arms
+    "scout":    dict(leg=1.25, shoulder=.85, hip=.8, chest=.8, head=.95, bulk=.7),                         # tall, light, fast
 }
 
 def frame(p):
@@ -38,7 +38,8 @@ def frame(p):
     wst_t = pel_t + .56
     ch_t = wst_t + 2.21 * p["chest"]
     sh_z = wst_t + 1.76 * p["chest"]
-    hd_b = ch_t + .09; hd_t = hd_b + .91 * p["head"]
+    hd_b = ch_t + .09
+    hh = hd_b / 8 * p["head"]; hd_t = hd_b + hh   # head follows the body: Standard = 9 heads tall (Gundam-style)
     hx, sx = 1.0 * p["hip"], 1.83 * p["shoulder"]
     a = p["arm"]
     el = (sx + .31 * a, sh_z - 2.01 * a); wr = (el[0] + .06 * a, el[1] - 1.73 * a); hn = wr[1] - .71 * a
@@ -65,7 +66,7 @@ def frame(p):
         ("pelvis", (0, 0, (pel_b + pel_t) / 2), (1.6 * p["hip"], 1.0, pel_t - pel_b), None),
         ("waist",  (0, 0, (pel_t + wst_t) / 2), (.5 * b, .5 * b, wst_t - pel_t), None),
         ("chest",  (0, 0, (wst_t + ch_t) / 2), (2 * sx - .56, 1.6 * p["chest"], ch_t - wst_t), None),
-        ("head",   (0, -.1, (hd_b + hd_t) / 2), (.95 * p["head"], .9 * p["head"], hd_t - hd_b), None),
+        ("head",   (0, -.1, (hd_b + hd_t) / 2), (1.05 * hh, 1.0 * hh, hd_t - hd_b), None),
     ]
     thick = {"shoulder": .55, "upper_arm": .45, "forearm": .5, "hand": .7, "thigh": .6, "shin": .55}
     for side, s in ((".L", 1), (".R", -1)):

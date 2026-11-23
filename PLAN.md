@@ -40,6 +40,7 @@ build-together, pro-3d-workflow, game-art, ponytail, repo-scout. Model: Opus.
 - Keep this file correct; update Now and the Log every session.
 
 ## Log (newest first)
+- Nov 22, 2026: heads were too small (11 to 14 heads tall). Head size now follows the body: Standard is 9 heads tall like Gundam-style mechs (about 9 to 9.5); Heavy and Brawler about 10 (small Jaeger-style heads), Scout 9.4, Squat 8 (chunky). The Head slider still scales it.
 - Nov 22, 2026 (voice): Phase 3 details decided, next moves picked, two movement styles (heavy / fast) added to Add-ons. Research notes: Gundams boost with main thrusters, turn with side thrusters (verniers) and by swinging their limbs as weights (AMBAC); Transformers fight like martial artists and keep wheels rolling while they transform.
 - Nov 22, 2026: Phase 2 built: frame.js (same math as mech_frame.py) + Body panel. Joints move per slider, stand-in blocks are drawn per bone so they resize; moves made on Standard keep playing on any shape. Tested at phone size: no errors. Not pushed yet.
 - Nov 22, 2026: fresh start. Phase 1 built: index.html loads the Standard mech frame (18 bones) with idle, walk, run, punch.

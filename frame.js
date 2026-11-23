@@ -5,11 +5,11 @@ window.MF_FRAME = (() => {
   const STANDARD = { height: 1, leg: 1, arm: 1, shoulder: 1, hip: 1, chest: 1, head: 1, bulk: 1 };
   const PRESETS = {
     standard: {},
-    heavy:   { leg: .85, arm: .95, shoulder: 1.3, hip: 1.25, chest: 1.35, head: .8, bulk: 1.5 },
+    heavy:   { leg: .85, arm: .95, shoulder: 1.3, hip: 1.25, chest: 1.35, head: .9, bulk: 1.5 },
     sleek:   { leg: 1.15, arm: 1.05, shoulder: .9, hip: .85, chest: .85, bulk: .8 },
-    squat:   { leg: .7, arm: .8, shoulder: 1.2, hip: 1.3, chest: 1.2, head: .7, bulk: 1.4 },
-    brawler: { leg: .9, arm: 1.3, shoulder: 1.25, chest: 1.2, head: .8, bulk: 1.3 },
-    scout:   { leg: 1.25, shoulder: .85, hip: .8, chest: .8, head: .9, bulk: .7 },
+    squat:   { leg: .7, arm: .8, shoulder: 1.2, hip: 1.3, chest: 1.2, head: 1.15, bulk: 1.4 },
+    brawler: { leg: .9, arm: 1.3, shoulder: 1.25, chest: 1.2, head: .9, bulk: 1.3 },
+    scout:   { leg: 1.25, shoulder: .85, hip: .8, chest: .8, head: .95, bulk: .7 },
   };
   const SLIDERS = [  // name, what it does, min, max
     ['height', 'Whole mech size', .6, 1.6], ['leg', 'Leg length', .6, 1.5], ['arm', 'Arm length', .6, 1.5],
@@ -22,7 +22,9 @@ window.MF_FRAME = (() => {
     const ankle = .63, knee = ankle + 2.39 * p.leg, hipz = knee + 2.51 * p.leg;
     const pelB = hipz - .25, pelT = hipz + .70, wstT = pelT + .56;
     const chT = wstT + 2.21 * p.chest, shZ = wstT + 1.76 * p.chest;
-    const hdB = chT + .09, hdT = hdB + .91 * p.head;
+    const hdB = chT + .09;
+    // head size follows the body: Standard is 9 heads tall (Gundam-style mechs are about 9 to 9.5 heads tall)
+    const hh = hdB / 8 * p.head, hdT = hdB + hh;
     const hx = 1.0 * p.hip, sx = 1.83 * p.shoulder, a = p.arm;
     const el = [sx + .31 * a, shZ - 2.01 * a], wr = [el[0] + .06 * a, el[1] - 1.73 * a], hn = wr[1] - .71 * a;
     const B = {
@@ -38,7 +40,7 @@ window.MF_FRAME = (() => {
     for (const [side, s] of [['.L', 1], ['.R', -1]])
       for (const [n, [h, t]] of Object.entries(left)) B[n + side] = [[s * h[0], h[1], h[2]], [s * t[0], t[1], t[2]]];
     const b = p.bulk, k = p.height;
-    const W = { pelvis: [1.6 * p.hip, 1.0], waist: [.5 * b, .5 * b], chest: [2 * sx - .56, 1.6 * p.chest], head: [.95 * p.head, .9 * p.head] };
+    const W = { pelvis: [1.6 * p.hip, 1.0], waist: [.5 * b, .5 * b], chest: [2 * sx - .56, 1.6 * p.chest], head: [1.05 * hh, 1.0 * hh] };
     const T = { shoulder: .55, upper_arm: .45, forearm: .5, hand: .7, thigh: .6, shin: .55 };
     for (const side of ['.L', '.R']) {
       for (const [n, t] of Object.entries(T)) W[n + side] = [t * b, t * b];
