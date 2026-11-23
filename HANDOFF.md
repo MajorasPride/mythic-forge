@@ -1,4 +1,4 @@
-# Mythic Forge — Handoff (updated Nov 23 2026, 4am)
+# Mythic Forge — Handoff (updated Nov 23 2026, 4:30am)
 
 Read this first in a new chat. The full plan, rules and log are in PLAN.md.
 
@@ -32,7 +32,7 @@ How it works: a piece is split finer the first time it is painted; paint lives i
 Phone layout: one scrolling bottom row, moves hide while painting, short panel, camera steps back so the mech sits above an open panel.
 
 ## Phone first (his rule, Nov 23)
-He uses the phone mostly (Galaxy S23 Ultra). Every screen has a phone layout under 600px wide: tools row + moves row at the bottom, camera buttons behind the camera button (top right), short panels with rows that swipe sideways, part choices in one swipe row. The camera frames the mech in the free part of the screen (fitDist + coverPx in index.html). Root bug fixed Nov 23: the canvas used to go on the page wider than a phone, which made the phone lay the app out as a wide zoomed-out page; keep renderer.setSize before the canvas is added, and keep the pixel ratio cap of 2. Not yet tried on his real phone.
+He uses the phone mostly (Galaxy S23 Ultra). Every screen has a phone layout under 600px wide: tools row + moves row at the bottom, camera buttons behind the camera button (top right), short panels with rows that swipe sideways, part choices in one swipe row. The camera frames the mech in the free part of the screen (fitDist + coverPx in index.html). Root bug fixed Nov 23: the canvas used to go on the page wider than a phone, which made the phone lay the app out as a wide zoomed-out page; keep renderer.setSize before the canvas is added, and keep the pixel ratio cap of 2. Every control is finger-sized (44px) and named for screen readers; measured with the ux-ui-audit probes (226 controls, 0 too small, 0 unnamed, 0 contrast failures). For phone / UI work use the skills modern-web-guidance + ux-ui-audit, then the phone bot. Not yet tried on his real phone.
 
 ## Bots (run before pushing)
 - python3 tools/bot/phone_bot.py -> must say ALL OK (every push)
@@ -66,4 +66,4 @@ Parked ideas (Add-ons in PLAN.md): emblem editor, share codes, part scale / hide
 - Don't rebuild the wheel: check free open-source first (MIT / Apache / BSD / CC0 only), credit in README.
 - Check what he already has (Drive kits, project folders) before making or downloading assets.
 - No screenshots or renders unless he asks. Links always clickable. Keep these docs up to date.
-- Skills: build-together, pro-3d-workflow, game-art, ponytail, karpathy-guidelines, repo-scout. Model: Opus for most work.
+- Skills: build-together, pro-3d-workflow, game-art, ponytail, karpathy-guidelines, repo-scout; phone / UI: modern-web-guidance, ux-ui-audit. Model: Opus for most work.

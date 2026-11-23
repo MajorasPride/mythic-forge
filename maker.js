@@ -25,7 +25,7 @@
   <div class="line" id="mkPens"></div>
   <div class="line"><button id="mkDup">Copy shape</button><button id="mkDel">Delete shape</button><button id="mkUndo">Undo</button><button id="mkClear">Clear</button></div>
   <p class="hint" id="mkMsg"></p>
-  <div class="line"><input id="mkName" placeholder="Name your part" maxlength="24"><button id="mkSave" class="on">Save + put it on</button></div>
+  <div class="line"><input id="mkName" aria-label="Name your part" placeholder="Name your part" maxlength="24"><button id="mkSave" class="on">Save + put it on</button></div>
   <div class="line" id="mkMine"></div>`;
   document.body.append(el);
   const cv = el.querySelector('#mkCv'), x = cv.getContext('2d'), $ = s => el.querySelector(s);

@@ -57,7 +57,7 @@ async def main():
         print('1. Opening Paint on a phone screen', flush=True)
         await tap('#paintBtn'); await pg.wait_for_timeout(1500)
         bar = await pg.evaluate("document.getElementById('bar').getBoundingClientRect().height")
-        check(bar < 70, f'bottom bar is one row ({bar:.0f}px tall)')
+        check(bar < 76, f'bottom bar is one row ({bar:.0f}px tall)')
         see = await pg.evaluate(SEE)
         check(see['seen'] >= 95 and see['wide'] >= 95, f"whole mech on screen above the panel: {see['seen']}% tall, {see['wide']}% wide (mech {see['top']}-{see['bottom']}px, panel starts {see['panel']}px)")
         check(see['bottom'] - see['top'] >= 250, f"mech is big enough to paint ({see['bottom'] - see['top']}px tall)")

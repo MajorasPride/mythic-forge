@@ -12,3 +12,4 @@ Photo mode: `photo.js`. Body parts are made in Blender from code: `tools/blender
 ## Credits
 - three.js (MIT): rendering, OutlineEffect, TessellateModifier (smooth brush paint), DecalGeometry (decals).
 - Tree bark photos in `textures-bark.js`: "Texture Pack" by Lynocs (https://lynocs.itch.io/texture-pack), CC0 1.0.
+- Phone layout follows Google Chrome's modern-web-guidance (Apache-2.0) guide `form-factor-adaptation`.

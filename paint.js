@@ -322,7 +322,7 @@
     const c = C.colours(), seen = new Set();
     for (const hex of [...['armor', 'armor2', 'accent', 'glow', 'frame'].map(k => c[k] && '#' + String(c[k]).replace('#', '')), '#ffffff', '#111111', ...S.swatches]) {
       if (!hex || seen.has(hex.toLowerCase())) continue; seen.add(hex.toLowerCase());
-      const b = document.createElement('button'); b.className = 'sw'; b.style.background = hex; b.title = hex; b.onclick = () => setColour(hex); box.append(b); }
+      const b = document.createElement('button'); b.className = 'sw'; b.style.background = hex; b.title = hex; b.setAttribute('aria-label', 'Colour ' + hex); b.onclick = () => setColour(hex); box.append(b); }
   }
   const mirrorP = p => new T.Vector3(-p.x, p.y, p.z);
   function nearestPiece(p) { let best = null, bd = 1e9; for (const m of near(p, .3)) { const w = worldPos(m); for (let i = 0; i < w.length; i += 9) { const d = Math.hypot(w[i] - p.x, w[i + 1] - p.y, w[i + 2] - p.z); if (d < bd) { bd = d; best = m; } } } return bd < .5 ? best : null; }
@@ -416,7 +416,7 @@
   function numbers() {
     const box = $('pNums'); box.innerHTML = '';
     if (!open || !tapped || !ALL()[tapped] || !$('pNumBtn').classList.contains('on')) return;
-    meshesOf(ALL()[tapped]).forEach((m, i) => { const b = document.createElement('button'); b.textContent = i + 1; b.className = 'pnum';
+    meshesOf(ALL()[tapped]).forEach((m, i) => { const b = document.createElement('button'); b.textContent = i + 1; b.className = 'pnum'; b.setAttribute('aria-label', 'Fill piece ' + (i + 1));
       b.onclick = () => { stroke = new Map(); fillMesh(m); endStroke(); }; b._m = m; box.append(b); });
   }
   function placeNumbers() {
@@ -434,8 +434,8 @@
       if (!hasCol) hasCol = pt.pc.some((v, k) => k % 4 === 3 && v > .02); if (!hasGlow) hasGlow = pt.g.some(v => v > .02);
       for (const L of pt.L) if (!keys.includes(L.k) && L.m.some(v => v > .02)) keys.push(L.k); }
     const row = (label, onDel, onTop) => { const d = document.createElement('span'); d.className = 'plyr'; d.append(label + ' ');
-      if (onTop) { const t = document.createElement('button'); t.textContent = '⬆ Top'; t.onclick = onTop; d.append(t); }
-      const x = document.createElement('button'); x.textContent = '✖'; x.onclick = onDel; d.append(x); box.append(d); };
+      if (onTop) { const t = document.createElement('button'); t.textContent = '⬆ Top'; t.setAttribute('aria-label', 'Bring ' + label + ' to the top'); t.onclick = onTop; d.append(t); }
+      const x = document.createElement('button'); x.textContent = '✖'; x.setAttribute('aria-label', 'Remove ' + label); x.onclick = onDel; d.append(x); box.append(d); };
     [...keys].reverse().forEach((k, i) => row('🧴 ' + nameOf(k), () => editLayers(h, k, 'del'), i ? () => editLayers(h, k, 'top') : null));
     if (hasCol) row('🎨 Colour paint', () => editLayers(h, null, 'col'));
     if (hasGlow) row('✦ Glow', () => editLayers(h, null, 'glow'));
@@ -625,29 +625,29 @@
     panel.insertAdjacentHTML('beforeend', `
       <p class="hint" id="pHint" data-sec="brush"></p>
       <div class="line" data-sec="brush"><button data-pb="">👆 Off</button><button data-pb="color">🖌 Color</button><button data-pb="spray">🥫 Spray</button><button data-pb="blotch">🩸 Blotch</button><button data-pb="fill">🪣 Fill</button><button data-pb="grad">🌈 Gradient</button><button data-pb="blend">🌫 Blend</button><button data-pb="wear">🪙 Wear</button><button data-pb="erase">🧽 Eraser</button><button data-pb="pick">💧 Pick colour</button></div>
-      <div class="line" data-sec="brush" id="pBrushRow"><input type="color" id="pbCol" value="#ff3030"><span>Size</span><input type="range" id="pbSize" min=".08" max="2" step=".02" value=".45"><span>Strength</span><input type="range" id="pbPower" min=".05" max="1" step=".05" value=".8"></div>
+      <div class="line" data-sec="brush" id="pBrushRow"><input type="color" id="pbCol" aria-label="Brush colour" value="#ff3030"><span>Size</span><input type="range" id="pbSize" aria-label="Brush size" min=".08" max="2" step=".02" value=".45"><span>Strength</span><input type="range" id="pbPower" aria-label="Brush strength" min=".05" max="1" step=".05" value=".8"></div>
       <div class="line" data-sec="brush" id="pSwatches"></div>
-      <div class="line" data-sec="brush" id="pGradRow"><span>Fades to</span><input type="color" id="pbCol2" value="#1a2a6a"><select id="pbGradDir"><option value="1">Top to bottom</option><option value="0">Outside to middle</option><option value="2">Front to back</option></select></div>
+      <div class="line" data-sec="brush" id="pGradRow"><span>Fades to</span><input type="color" id="pbCol2" aria-label="Second colour the gradient fades to" value="#1a2a6a"><select id="pbGradDir"><option value="1">Top to bottom</option><option value="0">Outside to middle</option><option value="2">Front to back</option></select></div>
       <div class="line" data-sec="brush" id="pWearRow"><button data-wear="edge">Worn edges</button><button data-wear="dirt">Dirt</button><button data-wear="rust">Rust</button><button data-wear="scorch">Scorch</button></div>
-      <div class="line" data-sec="brush" id="pMistRow"><span>Mist</span><small>fine</small><input type="range" id="pbMist" min="0" max="1" step=".05" value=".25"><small>speckles</small></div>
+      <div class="line" data-sec="brush" id="pMistRow"><span>Mist</span><small>fine</small><input type="range" id="pbMist" aria-label="Spray mist, fine to speckles" min="0" max="1" step=".05" value=".25"><small>speckles</small></div>
       <div class="line" data-sec="brush" id="pWithRow"><button id="pWith"></button><button id="pGlowP">✦ Glow paint</button></div>
       <div class="line" data-sec="brush"><button id="pBoth">🪞 Both sides</button><button id="pUndo">↶ Undo</button><button id="pClearPart">Clear picked</button><button id="pClearAll">Clear all paint</button></div>
       <div class="line" data-sec="skin"><span>Put on:</span><select id="pTarget">${SLOTS.map(([k, n]) => `<option value="${k}">Whole mech: ${n}</option>`).join('')}<option value="part">Picked part</option><option value="marked">Marked parts</option></select></div>
-      <div class="line" data-sec="skin"><select id="pGroup">${groups.map(g => `<option>${g}</option>`).join('')}</select><span>Pattern</span><input type="range" id="pTile" min=".3" max="3" step=".1" value="1"><button id="pClearSkins">Clear skins</button></div>
+      <div class="line" data-sec="skin"><select id="pGroup">${groups.map(g => `<option>${g}</option>`).join('')}</select><span>Pattern</span><input type="range" id="pTile" aria-label="Skin pattern size" min=".3" max="3" step=".1" value="1"><button id="pClearSkins">Clear skins</button></div>
       <div class="line" data-sec="skin" id="pSkins"></div>
       <div class="line" data-sec="mark"><button id="pMark">🔖 Mark parts</button><button id="pMarkClear">Clear marks</button><button id="pFillMarked">🪣 Fill marked</button></div>
       <div class="line" data-sec="mark"><small id="pMarkInfo">Nothing marked.</small></div>
-      <div class="line" data-sec="mark"><input id="pGroupName" placeholder="Group name" style="font:inherit;min-height:36px;border-radius:8px;background:#2c2c30;color:#eee;border:1px solid #4a4a4e;padding:0 8px;width:130px"><button id="pGroupSave">Save group</button><select id="pGroups"></select><button id="pGroupDel">Delete</button></div>
+      <div class="line" data-sec="mark"><input id="pGroupName" aria-label="Group name" placeholder="Group name" style="font:inherit;min-height:36px;border-radius:8px;background:#2c2c30;color:#eee;border:1px solid #4a4a4e;padding:0 8px;width:130px"><button id="pGroupSave">Save group</button><select id="pGroups"></select><button id="pGroupDel">Delete</button></div>
       <div class="line" data-sec="mark"><button id="pNumBtn">🔢 Paint by number (picked part)</button></div>
       <div class="line" data-sec="mark"><small>Layers:</small></div>
       <div class="line" data-sec="mark" id="pLayers" style="flex-wrap:wrap"></div>
       <div class="line" data-sec="decal" id="pdKinds">${Object.entries(DECALS).map(([k, n]) => `<button data-dk="${k}">${n}</button>`).join('')}</div>
-      <div class="line" data-sec="decal"><input id="pdText" value="01" maxlength="8" placeholder="Text" style="font:inherit;min-height:36px;border-radius:8px;background:#2c2c30;color:#eee;border:1px solid #4a4a4e;padding:0 8px;width:84px"><input type="color" id="pdCol" value="#ffffff"><span>Size</span><input type="range" id="pdSize" min=".15" max="2.5" step=".05" value=".6"><span>Turn</span><input type="range" id="pdTurn" min="-180" max="180" step="5" value="0"></div>
+      <div class="line" data-sec="decal"><input id="pdText" aria-label="Decal text" value="01" maxlength="8" placeholder="Text" style="font:inherit;min-height:36px;border-radius:8px;background:#2c2c30;color:#eee;border:1px solid #4a4a4e;padding:0 8px;width:84px"><input type="color" id="pdCol" aria-label="Decal colour" value="#ffffff"><span>Size</span><input type="range" id="pdSize" aria-label="Decal size" min=".15" max="2.5" step=".05" value=".6"><span>Turn</span><input type="range" id="pdTurn" aria-label="Decal turn" min="-180" max="180" step="5" value="0"></div>
       <div class="line" data-sec="decal"><button id="pdBoth">🪞 Both sides</button><button id="pdUndo">↶ Remove last</button><button id="pdClearPart">Clear picked part</button><button id="pdClearAll">Clear all decals</button></div>
       <div class="line" data-sec="decal"><small id="pdInfo"></small></div>
       <div class="line" data-sec="more"><span>Element:</span><select id="pElem"><option value="">On picked / marked part...</option>${Object.keys(ELEMENTS).map(k => `<option>${k}</option>`).join('')}</select><button id="pBits">🪨 Grow bits</button></div>
-      <div class="line" data-sec="more"><span>Brightness</span><input type="range" id="pBright" min=".4" max="1.2" step=".05"></div>
-      <div class="line" data-sec="more"><span>Glow</span><input type="range" id="pGlow" min="0" max="3" step=".1"><button id="pNight">🌙 Night preview</button></div>`);
+      <div class="line" data-sec="more"><span>Brightness</span><input type="range" id="pBright" aria-label="Brightness" min=".4" max="1.2" step=".05"></div>
+      <div class="line" data-sec="more"><span>Glow</span><input type="range" id="pGlow" aria-label="Glow strength" min="0" max="3" step=".1"><button id="pNight">🌙 Night preview</button></div>`);
     const showSec = k => { panel.querySelectorAll('[data-sec]').forEach(el => el.hidden = el.dataset.sec !== k); panel.querySelectorAll('[data-pt]').forEach(b => b.classList.toggle('on', b.dataset.pt === k)); sec = k;
       if (k === 'decal') { brush = null; marking = false; $('pMark').classList.remove('on'); tip(decalKind ? 'Tap the mech to stick it on.' : 'Pick a decal, then tap the mech.'); } if (k === 'mark') showLayers(); syncBrushUI(); };
     panel.querySelectorAll('[data-pt]').forEach(b => b.onclick = () => showSec(b.dataset.pt));

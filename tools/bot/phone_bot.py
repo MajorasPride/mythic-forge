@@ -46,7 +46,7 @@ async def main():
                 if not await pg.evaluate("window.__mf.camBusy()"): break
                 await pg.wait_for_timeout(250)
             await pg.wait_for_timeout(ms)
-        async def controls(scope, label, min_size=34):
+        async def controls(scope, label, min_size=44):   # 44px = the finger-size rule for touch screens (WCAG 2.5.5)
             ids = await pg.evaluate("""(scope=>{document.querySelectorAll('[data-botid]').forEach(e=>delete e.dataset.botid);
               return [...document.querySelectorAll(scope)].flatMap(root=>[...root.querySelectorAll('button, select, input')]).filter(e=>e.offsetParent!==null&&!e.closest('[hidden]')).map((e,i)=>{e.dataset.botid='b'+i;return 'b'+i})})""", scope)
             bad, small = [], []
@@ -56,9 +56,14 @@ async def main():
                 except Exception: bad.append(i); continue
                 r = await el.bounding_box()
                 if not r or r['y'] < -1 or r['y'] + r['height'] > H + 1 or r['x'] < -1 or r['x'] + r['width'] > W + 1: bad.append(i)
-                elif r['height'] < min_size - .5 and await el.evaluate("e=>e.type!=='range'"): small.append(await el.evaluate("e=>(e.textContent||e.id||e.type).trim().slice(0,14)"))
+                else:
+                    need = await el.evaluate("(e,m)=>e.matches('.sw,.pnum')||e.type==='range'?40:m", min_size)   # round colour dots are 40px with a 44px hit area; sliders have a tall hit area
+                    if r['height'] < need - .5: small.append(await el.evaluate("e=>(e.textContent||e.id||e.type).trim().slice(0,14)") + f" {r['height']:.0f}px")
+            unnamed = await pg.evaluate("""(scope=>[...document.querySelectorAll(scope)].flatMap(root=>[...root.querySelectorAll('button, select, input')]).filter(e=>e.offsetParent!==null&&!e.closest('[hidden]'))
+              .filter(e=>!((e.getAttribute('aria-label')||'').trim()||(e.labels&&e.labels[0]&&e.labels[0].textContent.trim())||(e.tagName==='BUTTON'&&e.textContent.trim()))).map(e=>e.id||e.tagName+'.'+e.className))""", scope)
             check(not bad, f'{label}: {len(ids) - len(bad)}/{len(ids)} controls can be reached')
-            check(not small, f'{label}: every button is at least {min_size}px tall' + (f' (too small: {small[:6]})' if small else ''))
+            check(not small, f'{label}: every control is finger-sized ({min_size}px)' + (f' (too small: {small[:6]})' if small else ''))
+            check(not unnamed, f'{label}: every control has a name a screen reader can say' + (f' (unnamed: {unnamed[:6]})' if unnamed else ''))
         async def no_sideways(label):
             w = await pg.evaluate("Math.max(document.documentElement.scrollWidth, document.body.scrollWidth)")
             check(w <= W + 1, f'{label}: the page does not scroll sideways ({w}px wide)')
@@ -70,17 +75,18 @@ async def main():
         iw = await pg.evaluate("innerWidth")
         check(iw == W, f'the page is laid out at phone width ({iw}px, phone is {W}px)')
         bar = await pg.evaluate("document.getElementById('bar').getBoundingClientRect().height")
-        check(bar <= 110, f'bottom buttons take two rows or fewer ({bar:.0f}px)')
+        check(bar <= 116, f'bottom buttons take two rows or fewer ({bar:.0f}px)')
         vis = await pg.evaluate("[...document.querySelectorAll('#bar button')].filter(b=>b.offsetParent!==null).every(b=>{const r=b.getBoundingClientRect();return r.left>=-1&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1})")
         check(vis, 'every bottom button is on screen without swiping')
-        await controls('#bar', 'bottom buttons', 36)
+        await controls('#bar', 'bottom buttons')
         s = await pg.evaluate(BOX + "('*')")
         check(s['seen'] >= 98 and s['wide'] >= 98, f"whole mech on screen: {s['seen']}% tall, {s['wide']}% wide")
         check(s['tall'] >= .5 * s['free'], f"mech fills the screen well ({s['tall']}px of {s['free']}px free)")
         pr = await pg.evaluate("window.__mf.renderer.getPixelRatio()")
         check(pr <= 2, f'drawing detail capped for speed (pixel ratio {pr})')
         await no_sideways('home')
-        await tap('#viewsBtn'); await controls('#views', 'camera buttons', 34); await tap('#viewsBtn')
+        check(await pg.evaluate("getComputedStyle(document.body).overscrollBehaviorY") == 'none', 'dragging down on the screen cannot trigger pull-to-refresh')
+        await tap('#viewsBtn'); await controls('#views', 'camera buttons'); await tap('#viewsBtn')
         check(not await pg.evaluate("document.getElementById('views').offsetParent!==null"), 'camera buttons fold away again')
 
         print('2. Body', flush=True)
@@ -133,7 +139,7 @@ async def main():
 
         print('6. Photo mode', flush=True)
         await tap('#photoBtn'); await settle()
-        await controls('#photoBar', 'Photo controls', 36)
+        await controls('#photoBar', 'Photo controls')
         s = await pg.evaluate(BOX + "('*')"); check(s['seen'] >= 95 and s['wide'] >= 95, f"mech stays in view above the controls: {s['seen']}% tall, {s['wide']}% wide")
         await pg.select_option('#phBack', 'city'); await pg.select_option('#phMove', 'run')
         try:

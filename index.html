@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,viewport-fit=cover">
 <title>Mythic Forge</title>
 <style>
   html, body { margin: 0; height: 100%; background: #1c1c1e; color: #e8e8e8; font-family: system-ui, sans-serif; overflow: hidden; }
@@ -54,29 +54,45 @@
      swipe sideways, part choices in one swipe row, view buttons folded behind a camera button, room left for the phone's gesture bar */
   #viewsBtn { display: none; position: absolute; top: 6px; right: 6px; min-height: 38px; min-width: 44px; padding: 0 10px; font-size: 17px; background: #2c2c30cc; z-index: 3; }
   button, select, input { touch-action: manipulation; }
+  html, body { overscroll-behavior: none; overflow-wrap: break-word; }                       /* no pull-to-refresh or bounce while dragging on the mech */
+  #bar, #body, #build, #details, #paint, #photoBar, #views { touch-action: pan-x pan-y; }    /* panels scroll, but a pinch on them can't zoom the page */
+  .hint { text-wrap: pretty; }
+  /* FINGERS (modern-web-guidance form-factor-adaptation; WCAG 2.5.5): on a touch screen every control is at least 44px, sliders get a tall hit area */
+  @media (pointer: coarse), (max-width: 600px) {
+    button, select, input[type=text], input:not([type]) { min-height: 44px !important; min-width: 44px; }
+    input[type=range] { height: 44px; }
+    input[type=color] { width: 44px; height: 44px; }
+    .sw, #pSwatches .sw, .pnum { position: relative; width: 40px !important; height: 40px !important; min-height: 40px !important; min-width: 40px; }
+    .sw::after, .pnum::after { content: ''; position: absolute; inset: -3px; }               /* small round buttons: hit area reaches 44px without looking bigger */
+    .plyr button { min-height: 44px !important; padding: 0 12px !important; }
+  }
   @media (max-width: 600px) {
-    #top small { display: none; } #top { padding: 12px 12px; font-size: 14px; }
-    #bar { flex-wrap: wrap; justify-content: center; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); gap: 4px; }
-    #bar button { flex: 1 1 auto; min-width: 0; min-height: 42px; padding: 0 6px; font-size: 14px; order: 1; }
+    #top small { display: none; } #top { padding: max(12px, env(safe-area-inset-top, 0px)) 12px 12px; font-size: 14px; }
+    #viewsBtn { top: max(6px, env(safe-area-inset-top, 0px)); }
+    #bar { flex-wrap: wrap; justify-content: center; padding: 6px max(6px, env(safe-area-inset-right, 0px)) max(6px, env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-left, 0px)); gap: 4px; }
+    #bar button { flex: 1 1 auto; min-width: 44px; padding: 0 6px; font-size: 14px; order: 1; }
     #bar::after { content: ''; order: 2; flex-basis: 100%; height: 0; }
-    #moves button, #bar #bones { order: 3; min-height: 38px; }
+    #moves button, #bar #bones { order: 3; }
     #viewsBtn { display: block; }
     #views { top: 50px; right: 6px; gap: 3px; display: none; }
     body.views-open #views { display: grid; }
-    #views button { min-width: 56px; min-height: 36px; font-size: 12px; padding: 0 4px; }
+    #views button { min-width: 56px; font-size: 12px; padding: 0 4px; }
     #body, #build, #details { max-height: 44%; padding: 8px 10px; }
     #paint { max-height: 36%; padding: 8px 10px; }
-    #paint .line, #build .line, #details .line { flex-wrap: nowrap; overflow-x: auto; margin-bottom: 6px; padding-bottom: 2px; }
+    #paint .line, #build .line, #details .line, #photoBar .line, #presets { flex-wrap: nowrap; overflow-x: auto; margin-bottom: 6px; padding-bottom: 2px; overscroll-behavior-x: contain; scrollbar-width: none;
+      -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }   /* the right edge fades: "swipe for more" */
+    #paint .line::after, #build .line::after, #details .line::after, #photoBar .line::after, #presets::after { content: ''; flex: 0 0 24px; }   /* room so the last button can slide clear of the fade */
+    #pSkins, #pLayers { -webkit-mask-image: none !important; mask-image: none !important; }
     #paint .line > *, #build .line > *, #details .line > * { flex: none; }
-    #paint .line button, #build .line button, #details .line button { min-height: 40px; padding: 0 10px; }
+    #paint .line button, #build .line button, #details .line button { padding: 0 10px; }
     #paint input[type=range] { width: 110px; flex: none; }
     #details input[type=range] { width: 180px; flex: none; }
     #paint .hint, #build .hint, #details .hint { font-size: 12px; margin-bottom: 6px; }
     #pSkins { flex-wrap: wrap !important; }
-    #presets { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; } #presets button { flex: none; min-height: 40px; }
-    .row { grid-template-columns: 108px 1fr 36px; min-height: 36px; gap: 8px; }
+    #presets button { flex: none; }
+    .row { grid-template-columns: 108px 1fr 36px; min-height: 44px; gap: 8px; }
     #photoBar { padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
-    #photoBar .line button, #photoBar select { min-height: 40px; }
+
     #maker { padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
   }
   body.painting #moves, body.painting #bones { display: none !important; }
@@ -92,7 +108,7 @@
 <body>
 <div id="view"></div>
 <div id="top"><span>Mythic Forge</span><small>Build your mech</small></div>
-<button id="viewsBtn" title="Camera buttons">🎥</button>
+<button id="viewsBtn" title="Camera buttons" aria-label="Show or hide the camera buttons" aria-expanded="false">🎥</button>
 <div id="views">
   <button data-view="front">Front</button><button data-view="side">Side</button>
   <button data-view="angle">3/4</button><button data-view="back">Back</button>
@@ -103,9 +119,9 @@
 </div>
 <div id="body"><div id="presets"></div><div id="sliders"></div></div>
 <div id="build">
-  <div class="line"><select id="starterPick"></select><button id="randomBtn">🎲 Random</button></div>
+  <div class="line"><select id="starterPick" aria-label="Starter mechs"></select><button id="randomBtn">🎲 Random</button></div>
   <p class="hint" id="buildHint">Tap a spot on the mech (or pick it here), then pick a body part for it.</p>
-  <div class="line"><span>Spot:</span><select id="bonePick"></select><button id="mirrorBtn" class="on">Mirror</button></div>
+  <div class="line"><span>Spot:</span><select id="bonePick" aria-label="Spot on the mech"></select><button id="mirrorBtn" class="on">Mirror</button></div>
   <div class="line" id="weaponRow"><span>Weapons:</span><button data-spot="weapon.R">Right hand</button><button data-spot="weapon.L">Left hand</button><button data-spot="mount.L">Shoulders</button></div>
   <div class="line"><span>Stance:</span><button data-stance="ready" class="on">Ready</button><button data-stance="relaxed">Relaxed</button><button data-stance="action">Action</button></div>
   <p class="hint" style="margin-top:-4px">The stance is for standing still. Walking carries the weapon low, running and punching hold it ready, and the free hand does the punching.</p>
@@ -116,14 +132,14 @@
   <div class="line" id="detailGroups"></div>
   <div class="line" id="detailChoices"></div>
   <div id="detailEdit" style="display: none">
-    <div class="line"><span>Size</span><input type="range" id="detSize" min=".4" max="2.5" step=".05" value="1"></div>
-    <div class="line"><span>Turn</span><input type="range" id="detTurn" min="0" max="360" step="5" value="0"></div>
+    <div class="line"><span>Size</span><input type="range" id="detSize" aria-label="Detail size" min=".4" max="2.5" step=".05" value="1"></div>
+    <div class="line"><span>Turn</span><input type="range" id="detTurn" aria-label="Detail turn" min="0" max="360" step="5" value="0"></div>
     <div class="line"><button id="detMirror" class="on">Mirror</button><button id="detDelete">Delete</button><button id="detDone">Done</button></div>
   </div>
   <div class="line"><button id="detClear">Clear all details</button></div>
 </div>
 <div id="paint">
-  <div class="line"><span>Colours:</span><select id="paintPick"></select></div>
+  <div class="line"><span>Colours:</span><select id="paintPick" aria-label="Colour scheme"></select></div>
   <div class="line" id="customRow" style="display: none"></div>
 </div>
 <div id="bar">
@@ -206,7 +222,7 @@ function viewAll(dirName) {
   glide(t, t.clone().addScaledVector(dir, fitDist(mechTop)));
 }
 document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => viewAll(b.dataset.view));
-document.getElementById('viewsBtn').onclick = e => e.target.classList.toggle('on', document.body.classList.toggle('views-open'));   // phone: camera buttons fold away
+document.getElementById('viewsBtn').onclick = e => { const open = document.body.classList.toggle('views-open'); e.target.classList.toggle('on', open); e.target.setAttribute('aria-expanded', open); };   // phone: camera buttons fold away
 // press-and-hold buttons for phones (no fiddly finger dragging): turn, zoom, look higher/lower
 let holding = null;
 function nudge(dt) {
@@ -685,7 +701,7 @@ document.getElementById('randomBtn').onclick = randomMech;
 document.getElementById('paintPick').innerHTML = Object.keys(SCHEMES).map(k => `<option value="${k}">${NAME(k)}</option>`).join('') + '<option value="custom">My colours</option>';
 document.getElementById('paintPick').onchange = e => { scheme = e.target.value; document.getElementById('customRow').style.display = scheme === 'custom' ? 'flex' : 'none'; paintAll(); save(); };
 for (const [key, label] of [['armor', 'Main'], ['armor2', 'Second'], ['accent', 'Trim'], ['glow', 'Glow']]) {
-  const l = document.createElement('label'); l.innerHTML = `${label} <input type="color">`; const inp = l.querySelector('input');
+  const l = document.createElement('label'); l.innerHTML = `${label} <input type="color">`;   /* the label names the colour picker */ const inp = l.querySelector('input');
   inp.value = '#' + (custom[key] || '888888'); inp.oninput = () => { custom[key] = inp.value.slice(1); paintAll(); save(); };
   document.getElementById('customRow').append(l);
 }
