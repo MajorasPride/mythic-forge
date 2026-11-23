@@ -21,6 +21,9 @@
   .row input { width: 100%; accent-color: #e8e8e8; }
   #build { position: absolute; left: 0; right: 0; bottom: var(--bar, 68px); max-height: 60%; overflow-y: auto; padding: 12px 16px; background: #1c1c1ef2; display: none; font-size: 14px; }
   #build.open { display: block; }
+  #pose { position: absolute; left: 0; right: 0; bottom: var(--bar, 68px); max-height: 60%; overflow-y: auto; padding: 12px 16px; background: #1c1c1ef2; display: none; font-size: 14px; }
+  #pose.open { display: block; }
+  #pose input[type=range] { flex: 1; min-width: 120px; } #pose b { min-width: 44px; text-align: right; }
   #details { position: absolute; left: 0; right: 0; bottom: var(--bar, 68px); max-height: 60%; overflow-y: auto; padding: 12px 16px; background: #1c1c1ef2; display: none; font-size: 14px; }
   #details.open { display: block; }
   #details input[type=range] { flex: 1; }
@@ -55,7 +58,7 @@
   #viewsBtn { display: none; position: absolute; top: 6px; right: 6px; min-height: 38px; min-width: 44px; padding: 0 10px; font-size: 17px; background: #2c2c30cc; z-index: 3; }
   button, select, input { touch-action: manipulation; }
   html, body { overscroll-behavior: none; overflow-wrap: break-word; }                       /* no pull-to-refresh or bounce while dragging on the mech */
-  #bar, #body, #build, #details, #paint, #photoBar, #views { touch-action: pan-x pan-y; }    /* panels scroll, but a pinch on them can't zoom the page */
+  #bar, #body, #build, #details, #pose, #paint, #photoBar, #views { touch-action: pan-x pan-y; }    /* panels scroll, but a pinch on them can't zoom the page */
   .hint { text-wrap: pretty; }
   /* FINGERS (modern-web-guidance form-factor-adaptation; WCAG 2.5.5): on a touch screen every control is at least 44px, sliders get a tall hit area */
   @media (pointer: coarse), (max-width: 600px) {
@@ -70,24 +73,25 @@
     #top small { display: none; } #top { padding: max(12px, env(safe-area-inset-top, 0px)) 12px 12px; font-size: 14px; }
     #viewsBtn { top: max(6px, env(safe-area-inset-top, 0px)); }
     #bar { flex-wrap: wrap; justify-content: center; padding: 6px max(6px, env(safe-area-inset-right, 0px)) max(6px, env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-left, 0px)); gap: 4px; }
-    #bar button { flex: 1 1 auto; min-width: 44px; padding: 0 6px; font-size: 14px; order: 1; }
+    #bar button { flex: 1 1 0; min-width: 44px; padding: 0 2px; font-size: 13px; order: 1; white-space: nowrap; }   /* 7 tools share one row */
     #bar::after { content: ''; order: 2; flex-basis: 100%; height: 0; }
-    #moves button, #bar #bones { order: 3; }
+    #moves button, #bar #bones { order: 3; flex: 1 1 auto; padding: 0 8px; font-size: 14px; }
     #viewsBtn { display: block; }
     #views { top: 50px; right: 6px; gap: 3px; display: none; }
     body.views-open #views { display: grid; }
     #views button { min-width: 56px; font-size: 12px; padding: 0 4px; }
-    #body, #build, #details { max-height: 44%; padding: 8px 10px; }
+    #body, #build, #details, #pose { max-height: 44%; padding: 8px 10px; }
+    #pose input[type=range] { width: 200px; flex: none; }
     #paint { max-height: 36%; padding: 8px 10px; }
-    #paint .line, #build .line, #details .line, #photoBar .line, #presets { flex-wrap: nowrap; overflow-x: auto; margin-bottom: 6px; padding-bottom: 2px; overscroll-behavior-x: contain; scrollbar-width: none;
+    #paint .line, #build .line, #details .line, #pose .line, #photoBar .line, #presets { flex-wrap: nowrap; overflow-x: auto; margin-bottom: 6px; padding-bottom: 2px; overscroll-behavior-x: contain; scrollbar-width: none;
       -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }   /* the right edge fades: "swipe for more" */
-    #paint .line::after, #build .line::after, #details .line::after, #photoBar .line::after, #presets::after { content: ''; flex: 0 0 24px; }   /* room so the last button can slide clear of the fade */
+    #paint .line::after, #build .line::after, #details .line::after, #pose .line::after, #photoBar .line::after, #presets::after { content: ''; flex: 0 0 24px; }   /* room so the last button can slide clear of the fade */
     #pSkins, #pLayers { -webkit-mask-image: none !important; mask-image: none !important; }
-    #paint .line > *, #build .line > *, #details .line > * { flex: none; }
-    #paint .line button, #build .line button, #details .line button { padding: 0 10px; }
+    #paint .line > *, #build .line > *, #details .line > *, #pose .line > * { flex: none; }
+    #paint .line button, #build .line button, #details .line button, #pose .line button { padding: 0 10px; }
     #paint input[type=range] { width: 110px; flex: none; }
     #details input[type=range] { width: 180px; flex: none; }
-    #paint .hint, #build .hint, #details .hint { font-size: 12px; margin-bottom: 6px; }
+    #paint .hint, #build .hint, #details .hint, #pose .hint { font-size: 12px; margin-bottom: 6px; }
     #pSkins { flex-wrap: wrap !important; }
     #presets button { flex: none; }
     .row { grid-template-columns: 108px 1fr 36px; min-height: 44px; gap: 8px; }
@@ -138,6 +142,7 @@
   </div>
   <div class="line"><button id="detClear">Clear all details</button></div>
 </div>
+<div id="pose"></div>
 <div id="paint">
   <div class="line"><span>Colours:</span><select id="paintPick" aria-label="Colour scheme"></select></div>
   <div class="line" id="customRow" style="display: none"></div>
@@ -149,6 +154,7 @@
   <button id="detailsBtn">Details</button>
   <button id="paintBtn">Paint</button>
   <button id="makeBtn">Make</button>
+  <button id="poseBtn">Pose</button>
   <button id="photoBtn">Photo</button>
   <button id="bones" class="on">Bones</button>
 </div>
@@ -172,6 +178,8 @@
 <script src="paint.js"></script>
 <!-- photo mode: pose, backdrop, lens, light, save / share a picture (photo.js) -->
 <script src="photo.js"></script>
+<!-- pose + animate: pose any joint, string poses into your own moves (pose.js) -->
+<script src="pose.js"></script>
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
@@ -207,7 +215,7 @@ let mechTop = 10;
 // how much of the bottom of the screen is covered by the button bar and any open panel
 function coverPx() {
   let top = innerHeight;
-  for (const el of document.querySelectorAll('#bar, #body.open, #build.open, #details.open, #paint.open, body.photo #photoBar')) if (el.offsetParent !== null) top = Math.min(top, el.getBoundingClientRect().top);
+  for (const el of document.querySelectorAll('#bar, #body.open, #build.open, #details.open, #pose.open, #paint.open, body.photo #photoBar')) if (el.offsetParent !== null) top = Math.min(top, el.getBoundingClientRect().top);
   return Math.max(0, innerHeight - top);
 }
 // how far back the camera sits so the whole mech fits in the free part of the screen, on a wide monitor or a tall narrow phone
@@ -216,10 +224,33 @@ function fitDist(top) {
   const t = Math.tan(camera.fov * Math.PI / 360), a = innerWidth / innerHeight, free = Math.max(.3, 1 - coverPx() / innerHeight);
   return Math.max(top * 1.1 / (2 * t * free * .66), top * .82 / (2 * t * a * .9), 14);
 }
+// CAMERA FRAMING (Nov 23, from his phone screenshots: "it's being weird"): frame what is really there. The camera aims at the middle of the
+// mech's real outline (weapons and shields included, wherever the move has carried it) and backs off until that outline fits the free screen.
+function boundsOf(list) { const box = new THREE.Box3(); for (const o of list) if (o) { o.updateWorldMatrix(true, true); box.expandByObject(o); } return box; }
+function mechBounds() {
+  const list = Object.values(held);
+  for (const b of Object.values(bones)) if (b.userData.block && b.userData.block.visible) list.push(b.userData.block);
+  const box = boundsOf(list);
+  return box.isEmpty() ? new THREE.Box3(new THREE.Vector3(-3, 0, -2), new THREE.Vector3(3, mechTop, 2)) : box;
+}
+function frameDist(box, fill = .78) {
+  const s = box.getSize(new THREE.Vector3()), t = Math.tan(camera.fov * Math.PI / 360), a = innerWidth / innerHeight, free = Math.max(.3, 1 - coverPx() / innerHeight), wide = Math.max(s.x, s.z);
+  return Math.max(s.y / (2 * t * free * fill), wide / (2 * t * a * .88)) + wide * .5;
+}
+let lastView = 'angle';
 function viewAll(dirName) {
-  const D = { front: [0, .15, 1], side: [1, .15, 0], angle: [.75, .3, .9], back: [0, .15, -1] }[dirName] || [.75, .3, .9];
-  const t = new THREE.Vector3(0, mechTop * .5, 0), dir = new THREE.Vector3(...D).normalize();
-  glide(t, t.clone().addScaledVector(dir, fitDist(mechTop)));
+  lastView = dirName || lastView;
+  const D = { front: [0, .15, 1], side: [1, .15, 0], angle: [.75, .3, .9], back: [0, .15, -1] }[lastView] || [.75, .3, .9];
+  const box = mechBounds(), t = box.getCenter(new THREE.Vector3()), dir = new THREE.Vector3(...D).normalize();
+  glide(t, t.clone().addScaledVector(dir, Math.max(frameDist(box), 8)));
+}
+// zoom on one spot: frame that part's real outline (a long rifle fits too), with some room around it, keeping the viewing angle
+function focusSpot(n) {
+  const bn = bones[BONE_OF(n)], box = boundsOf([held[n] || (isExtra(n) ? null : bn.userData.block)]);
+  if (box.isEmpty()) box.setFromCenterAndSize(bn.getWorldPosition(new THREE.Vector3()), new THREE.Vector3(1.6, 1.6, 1.6).multiplyScalar(params.height));
+  const s = box.getSize(new THREE.Vector3()); box.expandByScalar(Math.max(s.x, s.y, s.z) * .22);
+  const c = box.getCenter(new THREE.Vector3()), dir = camera.position.clone().sub(controls.target).normalize();
+  glide(c, c.clone().addScaledVector(dir, Math.max(frameDist(box, .7), controls.minDistance + 1)));
 }
 document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => viewAll(b.dataset.view));
 document.getElementById('viewsBtn').onclick = e => { const open = document.body.classList.toggle('views-open'); e.target.classList.toggle('on', open); e.target.setAttribute('aria-expanded', open); };   // phone: camera buttons fold away
@@ -298,7 +329,8 @@ new GLTFLoader().parse(bytes, '', gltf => {
     moves.punch_L = mixer.clipAction(new THREE.AnimationClip('punch_L', pc.duration, tracks)); }
   shape(F.withPreset('standard'), true);                 // remember the Standard positions
   shape(params);
-  ORDER.filter(n => moves[n]).forEach(addMoveButton);
+  ORDER.filter(n => moves[n]).forEach(n => addMoveButton(n));
+  MF_POSE.ready();                                       // my own saved moves get their buttons
   window.__cam = camera; window.__ctl = controls;
   window.__mf = { camBusy: () => !!camTo, setBody: p => { params = { ...F.STANDARD, ...p }; shape(params); refreshParts(); }, setStance: m => { stanceMode = m; }, mixer, moves, keepShape: () => { keepShape(); aimWrists(); }, held, renderer, mech, setPart: (...a) => setPart(...a), pokes, surfaceHit, padCentre, applyBuild: (...a) => applyBuild(...a) };   // for the test bot
   fit();   // the button bar is taller now: keep panels above it
@@ -348,8 +380,8 @@ function shape(p, isStandard = false) {
   // keep the whole mech in view: aim at its middle, back off for tall mechs
   const top = f.head.tail[2], dir = camera.position.clone().sub(controls.target).normalize(); mechTop = top;
   if (typeof refreshParts === 'function') refreshParts();   // body parts stretch to the new shape
-  controls.target.set(0, top * .5, 0);
-  camera.position.copy(controls.target).addScaledVector(dir, fitDist(top));
+  const box = mechBounds(); box.getCenter(controls.target);
+  camera.position.copy(controls.target).addScaledVector(dir, Math.max(frameDist(box), 8));
   controls.update();
 }
 // moves were made on the Standard frame: keep each joint's move, but at its new spot
@@ -634,8 +666,9 @@ function paintAll() { Object.values(held).forEach(paintPart); detailBits.forEach
 
 function pick(id) {
   if (!selBone) return hint('Tap a spot first');
-  setPart(selBone, id);
-  if (mirrorOn && other(selBone)) setPart(other(selBone), id);
+  const spot = selBone, jobs = [setPart(selBone, id)];
+  if (mirrorOn && other(selBone)) jobs.push(setPart(other(selBone), id));
+  if (isExtra(spot)) Promise.all(jobs).then(() => { if (selBone === spot) setTimeout(() => focusSpot(spot), 60); });   // a new weapon may be much longer: frame it again
   showChoices(); save();
 }
 function selectBone(n) {
@@ -645,12 +678,8 @@ function selectBone(n) {
   document.getElementById('bonePick').value = n || '';
   document.querySelectorAll('#weaponRow [data-spot]').forEach(b => b.classList.toggle('on', b.dataset.spot === n || (b.dataset.spot === 'mount.L' && n === 'mount.R')));
   showChoices();
-  if (n) {   // zoom in on the picked spot, keeping the same viewing angle
-    const bn = bones[BONE_OF(n)], p = new THREE.Vector3(); bn.getWorldPosition(p);
-    const tip = bn.userData.tip.clone().applyQuaternion(bn.userData.restQ).multiplyScalar(.5); p.add(tip);
-    const dir = camera.position.clone().sub(controls.target).normalize();
-    glide(p, p.clone().addScaledVector(dir, Math.max(bn.userData.size[1] * 3.5, 7) * fitDist(10) / 23));   // same zoom, backed off on a narrow screen or above an open panel
-  } else if (building === false) viewAll('angle');
+  if (n) focusSpot(n);          // zoom in on the picked spot
+  else viewAll();               // nothing picked (tapped empty space, closed the panel): back to the whole mech
 }
 function showChoices() {
   const box = document.getElementById('choices'); box.innerHTML = '';
@@ -714,18 +743,21 @@ renderer.domElement.addEventListener('pointerdown', e => { down.x = e.clientX; d
 renderer.domElement.addEventListener('pointerup', e => {
   if (!(building || detailing) || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 10 || e.timeStamp - down.t > 500) return;   // a tap, timed by the event's own clock
   if (detailing) { ray.setFromCamera(new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera); return detailTap(ray); }
-  ray.setFromCamera(new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
-  const targets = []; for (const b of Object.values(bones)) b.traverse(o => { if (o.isMesh && o.visible) targets.push(o); });
+  selectBone(spotAt(e.clientX, e.clientY));
+});
+function spotAt(x, y) {          // which spot on the mech is under this point of the screen
+  ray.setFromCamera(new THREE.Vector2(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 1), camera);
+  const targets = []; for (const b of Object.values(bones)) b.traverse(o => { if (o.isMesh && o.visible && !o.userData.overlay && !o.userData.ui) targets.push(o); });
   const hit = ray.intersectObjects(targets, false)[0];
   let o = hit && hit.object, spot = null;
   while (o && !o.isBone) { if (o.userData && o.userData.spot) { spot = o.userData.spot; break; } o = o.parent; }   // a part knows its spot
   if (!spot && o) spot = Object.keys(bones).find(n => bones[n] === o);
-  selectBone(spot);
-});
+  return spot || null;
+}
 
 // panels: only one open at a time
 function openPanel(which) {
-  for (const id of ['body', 'build', 'details', 'paint']) {
+  for (const id of ['body', 'build', 'details', 'pose', 'paint']) {
     const open = id === which && !document.getElementById(id).classList.contains('open');
     document.getElementById(id).classList.toggle('open', open);
     document.getElementById(id + 'Btn').classList.toggle('on', open);
@@ -735,9 +767,11 @@ function openPanel(which) {
   if (!building) selectBone(null);
   if (!detailing) { placing = null; selectDetail(null); showDetailChoices(); }
   MF_PAINT.setOpen(document.getElementById('paint').classList.contains('open'));
+  MF_POSE.setOpen(document.getElementById('pose').classList.contains('open'));
   if (innerWidth < 600 && which) setTimeout(() => viewAll('angle'), 60);   // phone: step back so the whole mech fits above the panel
 }
 document.getElementById('paintBtn').onclick = () => openPanel('paint');
+document.getElementById('poseBtn').onclick = () => openPanel('pose');
 document.getElementById('buildBtn').onclick = () => openPanel('build');
 const MAKER_SPOT = { head: 'head', chest: 'chest', pelvis: 'pelvis', back: 'back' };
 document.getElementById('makeBtn').onclick = () => MF_MAKER.open(selBone && LIBRARY[SLOT_OF(selBone)] && MF_MAKER.SLOTS[SLOT_OF(selBone)] ? SLOT_OF(selBone) : undefined);
@@ -849,11 +883,16 @@ function play(name) {
   current = next;
   document.querySelectorAll('[data-move]').forEach(b => b.classList.toggle('on', b.dataset.move === name));
 }
-function addMoveButton(name) {
+function setMoveButton(key, label) {     // my own moves (pose.js): add, rename or remove their button
+  let b = document.querySelector(`[data-move="${key}"]`);
+  if (!label) { if (b) b.remove(); fit(); return; }
+  if (!b) { addMoveButton(key, label); fit(); } else b.textContent = label;
+}
+function addMoveButton(name, label) {
   const b = document.createElement('button');
-  b.textContent = name[0].toUpperCase() + name.slice(1);
+  b.textContent = label || name[0].toUpperCase() + name.slice(1);
   b.dataset.move = name;
-  b.onclick = () => play(name);
+  b.onclick = () => { play(name); if (selBone) setTimeout(() => viewAll(), 60); };   // zoomed in on a part? step back so the whole move is in view
   document.getElementById('moves').append(b);
 }
 document.getElementById('bones').onclick = e => {
@@ -915,7 +954,8 @@ const setLocal = (b, deg, side) => { _e.set(R(deg[0]), R(deg[1]) * (side === 'L'
 // Action poses move the whole body (lunge, kneel...), so they never play over a move that needs the legs.
 function moveNow() { for (const [n, a] of Object.entries(moves)) if (a.isRunning() && a.getEffectiveWeight() > .5) return n.replace(/_L$/, ''); return 'idle'; }
 function modeNow(k) { const m = moveNow(); return m === 'idle' ? stanceMode : m === 'walk' && RELAXED[k] ? 'relaxed' : 'ready'; }
-function stanceOf(side) { const h = held['weapon.' + side]; if (!h) return null; const k = STANCE_OF[h.userData.p.id], mode = modeNow(k); return (mode === 'relaxed' && RELAXED[k]) || (mode === 'action' && ACTION[k]) || STANCE[k]; }
+function stanceOf(side) { if ((MF_POSE.busy && !MF_POSE.skip) || /^my:/.test(moveNow())) return null;   // your own poses and moves place the arms themselves
+  const h = held['weapon.' + side]; if (!h) return null; const k = STANCE_OF[h.userData.p.id], mode = modeNow(k); return (mode === 'relaxed' && RELAXED[k]) || (mode === 'action' && ACTION[k]) || STANCE[k]; }
 // two-bone reach (CCD): turn the upper arm and forearm so the wrist lands on the target point
 function reach(side, target) {
   const chain = [bones['forearm.' + side], bones['upper_arm.' + side]], end = bones['hand.' + side], e = new THREE.Vector3(), j = new THREE.Vector3();
@@ -991,9 +1031,10 @@ function aimWrists() {   // name kept: runs every frame after the move plays
 }
 
 MF_PHOTO.init({ THREE, scene, camera, renderer, outline, controls, moves, get mixer() { return mixer; }, lights: { hemi, sun, rim }, grid, skeleton: () => skeletonLines,
-  play: n => play(n), moveFor: n => moveFor(n), viewAll: v => viewAll(v), glide, fitDist, mechTop: () => mechTop, currentMove: () => current && current.getClip().name,
+  play: n => play(n), moveFor: n => moveFor(n), viewAll: v => viewAll(v), bounds: () => mechBounds(), frameDist: b => frameDist(b), glide, fitDist, mechTop: () => mechTop, currentMove: () => current && current.getClip().name,
   setStance: m => { const b = document.querySelector(`[data-stance="${m}"]`); if (b) b.click(); }, closePanels: () => openPanel('') });
 document.getElementById('photoBtn').onclick = () => MF_PHOTO.enter();
+MF_POSE.init({ THREE, scene, bones, moves, get mixer() { return mixer; }, held, renderer, BONE_OF, PLAY_ONCE, spotAt: (x, y) => spotAt(x, y), setMoveButton: (k, l) => setMoveButton(k, l), play: n => play(n) });
 
 // ---- 4. the loop
 const clock = new THREE.Clock();
@@ -1002,10 +1043,11 @@ renderer.setAnimationLoop(() => {
     // start every frame from the move's own pose: the mixer skips joints whose value didn't change (a held or frozen frame),
     // so without this the stance tweaks from the last frame would pile up (legs slowly spreading while frozen)
     for (const b of Object.values(bones)) { if (b.userData.stdPos) b.position.copy(b.userData.stdPos); if (b.userData.mixQ) b.quaternion.copy(b.userData.mixQ); }
-    const dt = clock.getDelta(); mixer.update(MF_PAINT.frozen || MF_PHOTO.frozen ? 0 : dt);
+    const dt = clock.getDelta(); mixer.update(MF_PAINT.frozen || MF_PHOTO.frozen || MF_POSE.frozen ? 0 : dt);
     for (const b of Object.values(bones)) (b.userData.mixQ || (b.userData.mixQ = new THREE.Quaternion())).copy(b.quaternion);   // play the move (holds still while a paint brush is on)
     keepShape();                      // then shift every joint to this mech's shape
     aimWrists();                      // and turn wrists so held weapons never point back into the body
+    MF_POSE.apply();                  // the Pose panel's own pose goes on top of everything
   }
   nudge(1 / 60);
   if (camTo) {

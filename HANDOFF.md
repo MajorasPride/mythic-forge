@@ -1,4 +1,4 @@
-# Mythic Forge — Handoff (updated Nov 23 2026, 4:30am)
+# Mythic Forge — Handoff (updated Nov 23 2026, 9am)
 
 Read this first in a new chat. The full plan, rules and log are in PLAN.md.
 
@@ -17,6 +17,12 @@ Made in Blender from code with his own Mech Kit builder: tools/blender/parts_all
 ## Stance by move (his rule, live Nov 23, first pass)
 "Each stance has to be appropriate to its moves." Idle = the picked stance. Walk = Relaxed carry if the weapon has one, else Ready. Run = Ready. Punch = Ready and the free hand punches (mirrored clip punch_L when only the right hand holds a weapon). Action poses only on Idle. Code: moveNow / modeNow / moveFor in index.html. Not done yet: a real attack per weapon type, a carry for every weapon, blending between stances.
 
+## Pose + my own moves (live Nov 23, first version)
+pose.js. Pose button: tap or pick a joint, Bend / Twist / Tilt sliders, Mirror, frames row (each frame is a pose), Play, Loop, Speed, Save move. A saved move gets a star button with the moves and is in Photo mode; one frame = a held pose. Saved in 'mf-mymoves'. Stances are off while posing and during his own moves. index.html calls MF_POSE.init / ready / setOpen / apply and reads MF_POSE.frozen / busy. Next ideas: IK (drag a hand), planted feet, easing, copy frames from built-in moves, export to Titan Clash.
+
+## Camera (fixed Nov 23 from his real phone screenshots)
+Frames the real outline: mechBounds / frameDist / focusSpot / viewAll in index.html. Whole view centres on the outline; a picked spot frames that part; tapping empty space or pressing a move steps back to the whole mech.
+
 ## Photo mode (live Nov 23)
 photo.js. Photo button: freeze any move on any frame, stance, camera angles, lens, 7 backdrops, 3 lights, floor grid, Save picture / Share. index.html calls MF_PHOTO.init and reads MF_PHOTO.frozen.
 
@@ -32,7 +38,7 @@ How it works: a piece is split finer the first time it is painted; paint lives i
 Phone layout: one scrolling bottom row, moves hide while painting, short panel, camera steps back so the mech sits above an open panel.
 
 ## Phone first (his rule, Nov 23)
-He uses the phone mostly (Galaxy S23 Ultra). Every screen has a phone layout under 600px wide: tools row + moves row at the bottom, camera buttons behind the camera button (top right), short panels with rows that swipe sideways, part choices in one swipe row. The camera frames the mech in the free part of the screen (fitDist + coverPx in index.html). Root bug fixed Nov 23: the canvas used to go on the page wider than a phone, which made the phone lay the app out as a wide zoomed-out page; keep renderer.setSize before the canvas is added, and keep the pixel ratio cap of 2. Every control is finger-sized (44px) and named for screen readers; measured with the ux-ui-audit probes (226 controls, 0 too small, 0 unnamed, 0 contrast failures). For phone / UI work use the skills modern-web-guidance + ux-ui-audit, then the phone bot. Not yet tried on his real phone.
+He uses the phone mostly (Galaxy S23 Ultra). Every screen has a phone layout under 600px wide: tools row + moves row at the bottom, camera buttons behind the camera button (top right), short panels with rows that swipe sideways, part choices in one swipe row. The camera frames the mech in the free part of the screen (fitDist + coverPx in index.html). Root bug fixed Nov 23: the canvas used to go on the page wider than a phone, which made the phone lay the app out as a wide zoomed-out page; keep renderer.setSize before the canvas is added, and keep the pixel ratio cap of 2. Every control is finger-sized (44px) and named for screen readers; measured with the ux-ui-audit probes (226 controls, 0 too small, 0 unnamed, 0 contrast failures). For phone / UI work use the skills modern-web-guidance + ux-ui-audit, then the phone bot. He sent real phone screenshots Nov 23 9am: the layout fits (two button rows, panel, mech above). His complaint then was the camera, fixed the same morning; he has not confirmed the fix yet.
 
 ## Bots (run before pushing)
 - python3 tools/bot/phone_bot.py -> must say ALL OK (every push)
@@ -43,13 +49,14 @@ They need playwright + chrome and three.js 0.170 at /tmp/t/node_modules/three (n
 Last run Nov 23 4am on the live page: phone ALL OK, paint ALL OK, weapon 25/25 clean on all six bodies above, shoulder 72/72 ok on both.
 
 ## Next up, in order
-1. His feedback from the real phone: does it now fit the screen, paint, the Hero + Walker sets, Photo mode (only the bots have tried it).
+1. His feedback from the real phone: is the camera still 'weird', Pose + his own moves, paint, the Hero + Walker sets, Photo mode.
 2. Stances: weapon attacks per weapon type (so Punch fits the weapon), a carry for every weapon, then the older notes (Relaxed shield closer, two sabers crossing). (Bazooka is done: it rests just above the shoulder part, level, clean on six bodies.)
 3. Second pass on the sets from his notes; more variants per spot (his kit rule: think more than 3).
 4. Item 7, More moves.
 Parked ideas (Add-ons in PLAN.md): emblem editor, share codes, part scale / hide sub-pieces, diorama with several mechs, paint presets, Part Maker upgrades, more decals, bits slider, bloom + floating effects.
 
 ## Open questions for him (also at the bottom of PLAN.md)
+- A1 Pose + my own moves: what next (drag a hand / IK, planted feet, easing, copy from Walk, send to Titan Clash)?
 - S3 Stance by move: are walk = carry low, run / punch = ready, free hand punches the right calls? What should Punch do for each weapon?
 - S1 What looks off on the Hero + Walker sets?
 - S2 Is the bazooka's new resting spot what he meant by 'flatter on the shoulder'?

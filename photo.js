@@ -46,12 +46,13 @@
     if (window.MF_PAINT && MF_PAINT.setNight) MF_PAINT.setNight(night);
     if (!night) { L.hemi.intensity = b[0] * k[0]; L.sun.intensity = b[1] * k[1]; L.rim.intensity = b[2] * k[2]; }
   }
-  const ANGLES = { hero: [[.55, -.12, .82], 1.3, 30], front: [[0, .1, 1], 1, 40], side: [[1, .1, 0], 1, 40], top: [[.35, 1, .6], 1.1, 40], face: [[.35, .05, 1], .28, 28] };
+  const ANGLES = { hero: [[.55, -.12, .82], 1.08, 30], front: [[0, .1, 1], 1, 40], side: [[1, .1, 0], 1, 40], top: [[.35, 1, .6], 1.05, 40], face: [[.35, .05, 1], .3, 28] };
   function angle(kind) {
-    const [d, far, fov] = ANGLES[kind], top = C.mechTop(), dir = new T.Vector3(...d).normalize();
-    const target = new T.Vector3(0, top * (kind === 'face' ? .9 : kind === 'hero' ? .55 : .5), 0);
+    const [d, far, fov] = ANGLES[kind], dir = new T.Vector3(...d).normalize();
     setFov(fov); $('phLens').value = fov;
-    C.glide(target, target.clone().addScaledVector(dir, C.fitDist(top) * far * (kind === 'face' ? 1 : .92)));   // fitDist already allows for the lens
+    const box = C.bounds(), size = box.getSize(new T.Vector3()), target = box.getCenter(new T.Vector3());
+    if (kind === 'face') target.y = box.min.y + size.y * .9;
+    C.glide(target, target.clone().addScaledVector(dir, Math.max(C.frameDist(box) * far, 3)));   // frames the mech's real outline, and allows for the lens
   }
   function setFov(f) { C.camera.fov = f; C.camera.updateProjectionMatrix(); }
 
@@ -79,7 +80,7 @@
       light: [C.lights.hemi.intensity, C.lights.sun.intensity, C.lights.rim.intensity], min: C.controls.minDistance };
     if (C.skeleton()) C.skeleton().visible = false;
     C.controls.maxPolarAngle = Math.PI * .56; C.controls.minDistance = 2;
-    $('phMove').innerHTML = Object.keys(C.moves).filter(n => !/_L$/.test(n)).map(n => `<option value="${n}">${n[0].toUpperCase() + n.slice(1)}</option>`).join('');
+    $('phMove').innerHTML = Object.keys(C.moves).filter(n => !/_L$/.test(n)).map(n => `<option value="${n}">${(window.MF_POSE && MF_POSE.label(n)) || n[0].toUpperCase() + n.slice(1)}</option>`).join('');
     $('phMove').value = (C.currentMove() || 'idle').replace(/_L$/, ''); $('phFrame').value = .3; $('phBack').value = 'studio'; $('phLight').value = 'day'; $('phLens').value = C.camera.fov;
     $('phGrid').classList.toggle('on', C.grid.visible); $('phShare').style.display = navigator.canShare ? '' : 'none';
     document.body.classList.add('photo'); pose(); say(''); setTimeout(() => C.viewAll('angle'), 80);
