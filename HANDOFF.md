@@ -1,4 +1,4 @@
-# Mythic Forge — Handoff (updated Nov 23 2026, 9am)
+# Mythic Forge — Handoff (updated Nov 27 2026; app unchanged since Nov 23)
 
 Read this first in a new chat. The full plan, rules and log are in PLAN.md.
 
@@ -48,6 +48,12 @@ He uses the phone mostly (Galaxy S23 Ultra). Every screen has a phone layout und
 They need playwright + chrome and three.js 0.170 at /tmp/t/node_modules/three (npm i three@0.170.0 in /tmp/t).
 Last run Nov 23 4am on the live page: phone ALL OK, paint ALL OK, weapon 25/25 clean on all six bodies above, shoulder 72/72 ok on both.
 
+## Pen data (added Nov 27, docs only)
+PEN.md has his real S Pen numbers, measured Nov 9 with DataBud's Tester Lab: pressure, tilt, hover, side button, speed, accuracy, and what each means for Mythic Forge. Biggest one: his normal drawing only reaches about half pressure, so brushes must treat about 0.55 as full. Pen support itself is NOT built; the floors are in PLAN.md Add-ons. This sits on the `backup` branch; merge it into main on a Push Day (Monday) with his OK.
+
+## Branches (his rule since Nov 24)
+During the week push to `backup` only; main (the live site) gets one merge on Push Day, Mondays. Nothing in `backup` right now changes the app.
+
 ## Next up, in order
 1. His feedback from the real phone: is the camera still 'weird', Pose + his own moves, paint, the Hero + Walker sets, Photo mode.
 2. Stances: weapon attacks per weapon type (so Punch fits the weapon), a carry for every weapon, then the older notes (Relaxed shield closer, two sabers crossing). (Bazooka is done: it rests just above the shoulder part, level, clean on six bodies.)
@@ -56,6 +62,7 @@ Last run Nov 23 4am on the live page: phone ALL OK, paint ALL OK, weapon 25/25 c
 Parked ideas (Add-ons in PLAN.md): emblem editor, share codes, part scale / hide sub-pieces, diorama with several mechs, paint presets, Part Maker upgrades, more decals, bits slider, bloom + floating effects.
 
 ## Open questions for him (also at the bottom of PLAN.md)
+- N1 Pen support: build the pen floors next or after paint feedback? Which side-button action first (eraser, pick colour, undo)? (Default: test readout, pressure, ignore palm first.)
 - A1 Pose + my own moves: what next (drag a hand / IK, planted feet, easing, copy from Walk, send to Titan Clash)?
 - S3 Stance by move: are walk = carry low, run / punch = ready, free hand punches the right calls? What should Punch do for each weapon?
 - S1 What looks off on the Hero + Walker sets?
